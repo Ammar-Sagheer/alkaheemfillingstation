@@ -19,6 +19,8 @@
 >   shows a setup checklist until there is a tank, a nozzle and a price.
 >   `supabase/setup/start-empty.sql` removes the master's seeded tanks,
 >   nozzles and placeholder suppliers on a new database.
+> - The dip form defaults to **Evening** (`StockCheckForm.js`): this pump reads
+>   and dips after closing, at night. The master defaults to Morning.
 > - The backup panel shows only when the Vercel env var `SHOW_BACKUP=true`.
 >
 > The rest of this file, `README.md` and `docs/` describe the master app and its
