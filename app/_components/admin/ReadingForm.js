@@ -6,6 +6,13 @@ import { saveReading, deleteReading } from '@/app/_lib/actions';
 import SubmitButton from '@/app/_components/ui/SubmitButton';
 import FormMessage from '@/app/_components/ui/FormMessage';
 import FuelBadge from '@/app/_components/ui/FuelBadge';
+import {
+  VehicleFinder,
+  VehicleSelect,
+  customerLabel,
+  defaultVehicleFor,
+  vehicleIdForSave,
+} from '@/app/_components/admin/VehiclePicker';
 import NumberInput from '@/app/_components/ui/NumberInput';
 import ReadingChainWarning from '@/app/_components/admin/ReadingChainWarning';
 import { formatRate, saleAmount as exactSaleAmount } from '@/app/_lib/format-helpers';
@@ -545,7 +552,7 @@ function EntryForm({ row, date, customers }) {
   function addLine() {
     setLines((current) => [
       ...current,
-      { key: crypto.randomUUID(), customer_id: '', litres: '', amount: '' },
+      { key: crypto.randomUUID(), customer_id: '', vehicle_id: '', litres: '', amount: '' },
     ]);
   }
 
@@ -593,8 +600,9 @@ function EntryForm({ row, date, customers }) {
         type="hidden"
         name="credit_lines"
         value={JSON.stringify(
-          lines.map(({ customer_id, litres: l, amount }) => ({
+          lines.map(({ customer_id, vehicle_id, litres: l, amount }) => ({
             customer_id,
+            vehicle_id: vehicleIdForSave(vehicle_id),
             litres: Number(l),
             amount: Number(amount),
           })),
@@ -724,19 +732,34 @@ function EntryForm({ row, date, customers }) {
           <ul className="space-y-2">
             {lines.map((line) => (
               <li key={line.key} className="rounded-2xl border border-ink-200 bg-ink-50 p-3">
+                {/* By vehicle number first (801): the driver knows his truck,
+                    not always whose account it is on. Picking it fills both. */}
+                <div className="mb-2">
+                  <VehicleFinder
+                    customers={customers}
+                    onPick={(customerId, vehicleId) =>
+                      updateLine(line.key, { customer_id: customerId, vehicle_id: vehicleId })
+                    }
+                  />
+                </div>
                 <div className="flex gap-2">
                   <select
                     required
                     aria-label="Customer"
                     value={line.customer_id}
-                    onChange={(event) => updateLine(line.key, { customer_id: event.target.value })}
+                    onChange={(event) => {
+                      const customer = customers.find((c) => c.id === event.target.value);
+                      updateLine(line.key, {
+                        customer_id: event.target.value,
+                        vehicle_id: defaultVehicleFor(customer),
+                      });
+                    }}
                     className="input py-2 text-sm"
                   >
                     <option value="">Choose customer…</option>
                     {customers.map((customer) => (
                       <option key={customer.id} value={customer.id}>
-                        {customer.name}
-                        {customer.vehicle_number ? ` (${customer.vehicle_number})` : ''}
+                        {customerLabel(customer)}
                       </option>
                     ))}
                   </select>
@@ -751,6 +774,16 @@ function EntryForm({ row, date, customers }) {
                     ✕
                   </Button>
                 </div>
+                {line.customer_id ? (
+                  <div className="mt-2">
+                    <VehicleSelect
+                      customer={customers.find((c) => c.id === line.customer_id)}
+                      value={line.vehicle_id}
+                      onChange={(value) => updateLine(line.key, { vehicle_id: value })}
+                      className="input py-2 text-sm"
+                    />
+                  </div>
+                ) : null}
                 {/* AMOUNT FIRST, LITRES SECOND - the typed field leads and the
                     derived one follows it, so the pair reads in the order it
                     is filled in. The placeholders say which is which; swapping

@@ -5,8 +5,10 @@ import {
   getCustomerStatement,
   getLedgerEntriesPage,
   getLedgerEntriesForStatement,
+  getCustomerVehicles,
+  getCustomerVehicleTotals,
 } from '@/app/_lib/data-service';
-import { prepareAccountRows } from '@/app/_lib/customer-statement';
+import { prepareAccountRows, withVehicleNumbers } from '@/app/_lib/customer-statement';
 import { pageFrom } from '@/app/_components/ui/Pager';
 import CustomerView, { PER_PAGE } from '@/app/_components/admin/customers/CustomerView';
 
@@ -42,7 +44,7 @@ export default async function CustomerDetailPage({ params, searchParams }) {
    * what is listed, never what is owed. That is what makes a database page safe
    * on this screen and not on Purchases.
    */
-  const [statement, { rows: entries, total: entryCount, correctedIds }, allEntries] =
+  const [statement, { rows: entries, total: entryCount, correctedIds }, allEntries, vehicles, vehicleTotals] =
     await Promise.all([
       getCustomerStatement(id),
       getLedgerEntriesPage(id, { page, perPage: PER_PAGE }),
@@ -53,6 +55,9 @@ export default async function CustomerDetailPage({ params, searchParams }) {
        * re-windows the rows in the browser as the reader changes the range.
        */
       getLedgerEntriesForStatement(id),
+      // The account's vehicles and what each has taken (801).
+      getCustomerVehicles(id),
+      getCustomerVehicleTotals(id),
     ]);
 
   const customer = statement?.customer;
@@ -66,11 +71,13 @@ export default async function CustomerDetailPage({ params, searchParams }) {
       entryCount={entryCount}
       correctedIds={correctedIds}
       // Serialisable, and the same rows the download route builds its PDF from.
-      account={{ rows: prepareAccountRows(allEntries) }}
+      account={{ rows: prepareAccountRows(withVehicleNumbers(allEntries, vehicles)) }}
       page={page}
       asOf={todayISO()}
       isOwner={profile.role === ROLES.SUPER_ADMIN}
       statementError={statementError}
+      vehicles={vehicles}
+      vehicleTotals={vehicleTotals}
     />
   );
 }

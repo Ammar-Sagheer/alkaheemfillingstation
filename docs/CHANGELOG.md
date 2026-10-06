@@ -8155,3 +8155,42 @@ Rehearsed with two diesel tanks and a petrol tank, seven nozzles on four units
 and a day of trading: each tank came down by its own nozzles' litres, and the
 monthly report and daily summary counted all three tanks.
 
+
+
+## Al Hakeem: one account, many vehicles (migration 801)
+
+Some of this owner's customers are transport companies with 10 to 15 vehicles
+and one khata. He wanted to keep the one account and still know which vehicle
+took what. Asked, he chose **one credit limit per customer, no drivers, and
+the fill recorded against the vehicle**.
+
+- **The customer's page** has a Vehicles section above the history: a box to
+  add a number, and a table of each vehicle with its slips, litres, fuel
+  rupees and oil rupees, all time, summed in Postgres
+  (`get_customer_vehicle_totals`). Slips that named no vehicle get a row of
+  their own, so the column adds up to the account. The owner removes a
+  vehicle (deleted if it never took a slip, otherwise retired and kept on the
+  old slips) and can bring it back.
+- **The slip line** on a reading gains a "Vehicle no." box: type the number on
+  the windscreen and the customer and vehicle are both chosen, because the
+  driver knows his truck and not always whose account it is on. Under the
+  customer, a vehicle choice: absent for a customer with none, filled in for
+  one with one, and required for a fleet, so a fleet slip is never filed
+  against nobody by accident ("Not one of these" is always there for a truck
+  not yet on the list). The two oil forms carry the same choice.
+- **The ledger, the statement preview and the PDF** name the vehicle on each
+  row (a violet badge on screen, "Vehicle LES-4471" on the PDF's second line).
+  The Customers list says "5 vehicles" under a fleet's name and its search
+  finds an account by any of its numbers, typed with or without the dash.
+- **The rules are the database's**: a slip's vehicle must be on the slip's
+  account and active (`trg_vehicle_belongs_to_customer`), a number is on one
+  account at a time, and `vehicle_id` is copied from the slip to the ledger
+  entry it posts. The customer's old single vehicle box joins the list, by
+  trigger and by a backfill, so nothing typed before is lost.
+
+Every new column is nullable (backups from before 801 restore), the table is in
+`backup_table_order()` after `customers`, and adding or removing a vehicle is
+in the activity log. Tested on a local Postgres with a fleet of five, slips on
+three of them, oil on credit, a removed vehicle refused on a new slip, staff
+refused on remove, and a retire and restore. Rendered at 1366 and 400 px.
+`docs/PORT_TO_OTHER_PUMPS.md` lists it for the master and the other pumps.

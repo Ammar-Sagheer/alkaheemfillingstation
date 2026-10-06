@@ -111,6 +111,20 @@ function oldestFirst(entries) {
   });
 }
 
+/**
+ * The ledger rows with each one's vehicle number beside its vehicle_id (801), so
+ * a fleet's statement says which truck took each fill. The rows carry the id;
+ * the account's vehicles (removed ones too) carry the number.
+ */
+export function withVehicleNumbers(entries, vehicles = []) {
+  const names = Object.fromEntries(vehicles.map((vehicle) => [vehicle.id, vehicle.vehicle_number]));
+  return entries.map((entry) =>
+    entry.vehicle_id && names[entry.vehicle_id]
+      ? { ...entry, vehicle_number: names[entry.vehicle_id] }
+      : entry,
+  );
+}
+
 /** What a row is called on the statement when nobody wrote a note. */
 function describe(entry) {
   if (entry.note && entry.note.trim()) return entry.note.trim();
@@ -203,6 +217,7 @@ export function prepareAccountRows(entries) {
       date: entry.entry_date,
       detail: describe(entry),
       fuelType: entry.fuel_type ?? null,
+      vehicle: entry.vehicle_number ?? null,
       litres: entry.litres === null || entry.litres === undefined ? null : Number(entry.litres),
       debit: isDebit ? amount : 0,
       credit: isDebit ? 0 : amount,

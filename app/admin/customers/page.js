@@ -1,5 +1,5 @@
 import { requirePageRole, ROLES } from '@/app/_lib/helpers';
-import { getCustomerBalances, getRetiredCustomers } from '@/app/_lib/data-service';
+import { getCustomerBalances, getFleetNumbers, getRetiredCustomers } from '@/app/_lib/data-service';
 import CustomersView from '@/app/_components/admin/customers/CustomersView';
 
 export const metadata = { title: 'Customers' };
@@ -18,10 +18,19 @@ export default async function CustomersPage({ searchParams }) {
 
   // Removed customers are only fetched for the owner, who is the only one who
   // can act on them - staff would get a list they cannot use.
-  const [customers, retired] = await Promise.all([
+  const [customers, retired, fleet] = await Promise.all([
     getCustomerBalances(),
     isOwner ? getRetiredCustomers() : Promise.resolve([]),
+    getFleetNumbers(),
   ]);
 
-  return <CustomersView customers={customers} retired={retired} query={query} isOwner={isOwner} />;
+  return (
+    <CustomersView
+      customers={customers}
+      retired={retired}
+      fleet={fleet}
+      query={query}
+      isOwner={isOwner}
+    />
+  );
 }

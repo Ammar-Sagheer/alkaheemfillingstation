@@ -2,6 +2,11 @@
 
 import { useActionState, useEffect, useRef, useState } from 'react';
 
+import {
+  VehicleSelect,
+  customerLabel,
+  defaultVehicleFor,
+} from '@/app/_components/admin/VehiclePicker';
 import { createLubricantSale } from '@/app/_lib/actions';
 import SubmitButton from '@/app/_components/ui/SubmitButton';
 import FormMessage from '@/app/_components/ui/FormMessage';
@@ -65,6 +70,7 @@ export default function LubricantSaleForm({ lubricants, customers, date, dateLab
   const [payment, setPayment] = useState('cash');
   const [creditAmount, setCreditAmount] = useState('');
   const [customerId, setCustomerId] = useState('');
+  const [vehicleId, setVehicleId] = useState('');
 
   const selected = lubricants.find((row) => row.id === lubricantId) ?? null;
   const litresTyped = Number(litres);
@@ -81,6 +87,7 @@ export default function LubricantSaleForm({ lubricants, customers, date, dateLab
     setPayment('cash');
     setCreditAmount('');
     setCustomerId('');
+      setVehicleId('');
   }
 
   // Close once it has gone through, carrying the confirmation out with it: the
@@ -339,17 +346,30 @@ export default function LubricantSaleForm({ lubricants, customers, date, dateLab
                 name="customer_id"
                 required
                 value={customerId}
-                onChange={(event) => setCustomerId(event.target.value)}
+                onChange={(event) => {
+                  setCustomerId(event.target.value);
+                  setVehicleId(defaultVehicleFor(customers.find((c) => c.id === event.target.value)));
+                }}
                 className="input"
               >
                 <option value="">Choose a customer…</option>
                 {customers.map((customer) => (
                   <option key={customer.id} value={customer.id}>
-                    {customer.name}
-                    {customer.vehicle_number ? ` · ${customer.vehicle_number}` : ''}
+                    {customerLabel(customer)}
                   </option>
                 ))}
               </select>
+              {customerId ? (
+                <div className="mt-2">
+                  <VehicleSelect
+                    id="customer_id_vehicle"
+                    name="vehicle_id"
+                    customer={customers.find((c) => c.id === customerId)}
+                    value={vehicleId}
+                    onChange={setVehicleId}
+                  />
+                </div>
+              ) : null}
               <p className="mt-1 text-sm text-ink-600">
                 The credit is posted to their ledger as soon as this is saved.
               </p>

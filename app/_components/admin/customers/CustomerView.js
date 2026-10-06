@@ -9,6 +9,7 @@ import EditCustomerButton from '@/app/_components/admin/EditCustomerButton';
 import PrintStatementButton from '@/app/_components/admin/PrintStatementButton';
 import TitleHeader from '@/app/_components/admin/dashboard/TitleHeader';
 import SectionHeader from '@/app/_components/admin/dashboard/SectionHeader';
+import VehiclesPanel from '@/app/_components/admin/customers/VehiclesPanel';
 import FigureTile from '@/app/_components/admin/dashboard/FigureTile';
 import { TILE } from '@/app/_components/admin/dashboard/tones';
 
@@ -36,7 +37,11 @@ export default function CustomerView({
   asOf,
   isOwner,
   statementError,
+  vehicles = [],
+  vehicleTotals = [],
 }) {
+  const vehicleNames = Object.fromEntries(vehicles.map((vehicle) => [vehicle.id, vehicle.vehicle_number]));
+  const activeVehicles = vehicles.filter((vehicle) => vehicle.is_active).length;
   const balance = Number(statement.balance ?? 0);
   const limit = customer.credit_limit === null ? null : Number(customer.credit_limit);
   const isOverLimit = limit !== null && balance > limit;
@@ -49,7 +54,14 @@ export default function CustomerView({
         icon="customers"
         tone="credit"
         back={{ href: '/admin/customers', label: 'Back to customers' }}
-        description={[customer.vehicle_number, customer.phone].filter(Boolean).join(' · ') || null}
+        description={
+          [
+            activeVehicles > 1 ? `${activeVehicles} vehicles` : customer.vehicle_number,
+            customer.phone,
+          ]
+            .filter(Boolean)
+            .join(' · ') || null
+        }
       >
         {/* THE ACTIONS THAT USED TO BE A COLUMN. Recording a payment is the
             reason someone opens this page with a customer standing in front of
@@ -184,6 +196,23 @@ export default function CustomerView({
         </div>
       </div>
 
+      {/* ---- vehicles (801) ---- */}
+      <section aria-labelledby="vehicles-heading" className="@container mt-12">
+        <SectionHeader
+          id="vehicles-heading"
+          icon="vehicle"
+          tone="credit"
+          title="Vehicles"
+          description="Every vehicle on this account, and what each has taken on credit. One account, one balance: each slip just says which vehicle it was."
+        />
+        <VehiclesPanel
+          customerId={customer.id}
+          vehicles={vehicles}
+          totals={vehicleTotals}
+          isOwner={isOwner}
+        />
+      </section>
+
       {/* ---- history ---- */}
       <section aria-labelledby="history-heading" className="@container mt-12">
         <SectionHeader
@@ -200,6 +229,7 @@ export default function CustomerView({
           customerId={customer.id}
           balance={balance}
           canCorrect={isOwner}
+          vehicleNames={vehicleNames}
         />
 
         <Pager

@@ -499,9 +499,63 @@ export async function getExpectedStockForAllTanks(date) {
 
 export async function getCustomers() {
   const supabase = await createClient();
-  return unwrap(
-    await supabase.from('customers').select('*').eq('is_active', true).order('name'),
+  const rows = unwrap(
+    await supabase
+      .from('customers')
+      // Each with their vehicles (801): the credit forms offer them under the
+      // customer, and the Readings slip finds an account from a vehicle number.
+      .select('*, vehicles:customer_vehicles(id, vehicle_number, is_active)')
+      .eq('is_active', true)
+      .order('name'),
     'the customers',
+  );
+  return rows.map((customer) => ({
+    ...customer,
+    vehicles: (customer.vehicles ?? [])
+      .filter((vehicle) => vehicle.is_active)
+      .sort((a, b) => a.vehicle_number.localeCompare(b.vehicle_number, 'en', { numeric: true })),
+  }));
+}
+
+/** One customer's vehicles (801), retired ones too: the customer page lists both. */
+export async function getCustomerVehicles(customerId) {
+  const supabase = await createClient();
+  const rows = unwrap(
+    await supabase
+      .from('customer_vehicles')
+      .select('id, vehicle_number, is_active, created_at')
+      .eq('customer_id', customerId),
+    'the vehicles',
+  );
+  return rows.sort(
+    (a, b) =>
+      Number(b.is_active) - Number(a.is_active) ||
+      a.vehicle_number.localeCompare(b.vehicle_number, 'en', { numeric: true }),
+  );
+}
+
+/**
+ * Every active vehicle number, by customer (801), for the Customers list: a
+ * fleet reads "5 vehicles" under its name, and the search finds an account by
+ * any of its numbers, not only the one in the old vehicle box.
+ */
+export async function getFleetNumbers() {
+  const supabase = await createClient();
+  const rows = unwrap(
+    await supabase.from('customer_vehicles').select('customer_id, vehicle_number').eq('is_active', true),
+    'the vehicle numbers',
+  );
+  const byCustomer = {};
+  for (const row of rows) (byCustomer[row.customer_id] ??= []).push(row.vehicle_number);
+  return byCustomer;
+}
+
+/** What each vehicle on an account has taken on credit (801), all time. */
+export async function getCustomerVehicleTotals(customerId) {
+  const supabase = await createClient();
+  return unwrap(
+    await supabase.rpc('get_customer_vehicle_totals', { p_customer_id: customerId }),
+    'what each vehicle took',
   );
 }
 

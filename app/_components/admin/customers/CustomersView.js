@@ -52,9 +52,15 @@ function CustomerCell({ customer, muted = false }) {
         {/* Never a dash here. A dash under a name reads as a missing value the
             reader should go and fix; a customer with no vehicle on file is
             simply a customer with no vehicle, so the line is absent instead. */}
-        {customer.vehicle_number ? (
+        {/* A fleet (801) is counted, not listed: five numbers under a name
+            would push every row to five lines. They are on its own page. */}
+        {customer.fleet?.length > 1 ? (
           <span className="tabular block truncate text-sm text-ink-600">
-            {customer.vehicle_number}
+            {customer.fleet.length} vehicles
+          </span>
+        ) : customer.fleet?.[0] || customer.vehicle_number ? (
+          <span className="tabular block truncate text-sm text-ink-600">
+            {customer.fleet?.[0] ?? customer.vehicle_number}
           </span>
         ) : null}
       </div>
@@ -75,16 +81,30 @@ function CustomerCell({ customer, muted = false }) {
 function matches(customer, query) {
   if (!query) return true;
   const needle = query.toLowerCase();
-  return [customer.name, customer.vehicle_number, customer.phone]
-    .filter(Boolean)
-    .some((field) => String(field).toLowerCase().includes(needle));
+  if (
+    [customer.name, customer.vehicle_number, customer.phone]
+      .filter(Boolean)
+      .some((field) => String(field).toLowerCase().includes(needle))
+  ) {
+    return true;
+  }
+  // Any of a fleet's numbers (801), written however it was typed: "les4471"
+  // finds LES-4471. Same rule as vehicle_key() in the migration.
+  const key = (text) => String(text).replace(/[\s-]/g, '').toUpperCase();
+  const needleKey = key(query);
+  return needleKey.length > 1 && (customer.fleet ?? []).some((number) => key(number).includes(needleKey));
 }
 
 /**
  * The Customers page, drawn - in the new look (docs/UI_CONVENTIONS.md -> "The
  * new look"): credit accounts and what each one currently owes.
  */
-export default function CustomersView({ customers, retired, query, isOwner }) {
+export default function CustomersView({ customers: accounts, retired, fleet = {}, query, isOwner }) {
+  const customers = accounts.map((customer) => ({
+    ...customer,
+    fleet: fleet[customer.customer_id] ?? [],
+  }));
+
   /* The CARDS COUNT EVERY ACCOUNT, the table shows the matches. A search that
      silently changed "total outstanding" into "total outstanding among rows
      matching 'ahm'" would be a figure that looks like the headline and is not. */

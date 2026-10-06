@@ -119,3 +119,11 @@ for the rules.
 - **Target in skill:** SKILL.md section 3, "Working style the user has shown repeatedly"
 - **Status:** logged
 
+
+### L-011 · 2026-10-06 · high · preference
+- **Said / saw:** "we will copy these features to other repos too, i think this al hakeem client is giving me good suggestions, so remember that in future these suggestions will also be implemented on other pumps repo too"
+- **Context:** petrol pump client copies. Al Hakeem asked for self-setup of the forecourt (800), an evening dip default, and fleet customers (801).
+- **Lesson:** When one client of a multi-client product asks for something, build it in that client's repo first but build it to travel: no client-specific names in the code, migrations that are safe on a live pump with data, and a written list of what is waiting to be carried (`docs/PORT_TO_OTHER_PUMPS.md`). A behaviour that is how one pump works (the dip time) goes across as a setting, not as a new default for everyone.
+- **Scope:** all (multi-client products)
+- **Target in skill:** SKILL.md section 3, "Working style the user has shown repeatedly"
+- **Status:** logged

@@ -3761,3 +3761,15 @@ Two smaller rules from building it:
   reads as "delete". It is a button in words at the foot of the supplier's own
   page. ConfirmAction's red icon stays for what really removes or cancels.
 
+
+
+## A vehicle is a violet badge with its number (Al Hakeem, 801)
+
+Where a ledger row, a statement row or an oil sale says which vehicle on an
+account took it, the number goes in a `badge bg-violet-100 text-violet-800`
+beside the fuel badge, in semibold. Violet because no fuel, no status and no
+money direction uses it, so it never reads as one of those; the number itself
+is the information, so it still reads in grey on a photocopy. A fleet in a
+list is counted ("5 vehicles"), never listed. The pickers live in
+`VehiclePicker.js` (`VehicleSelect`, `VehicleFinder`, `customerLabel`); use
+them rather than a new select on any new credit form.

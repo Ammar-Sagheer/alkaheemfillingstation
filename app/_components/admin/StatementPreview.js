@@ -172,6 +172,11 @@ export default function StatementPreview({ statement, customerName }) {
                         <div className="flex flex-wrap items-center gap-2">
                           <span className={struck ? 'line-through' : undefined}>{row.detail}</span>
                           {row.fuelType ? <FuelBadge fuelType={row.fuelType} /> : null}
+                          {row.vehicle ? (
+                            <span className="badge whitespace-nowrap bg-violet-100 font-semibold text-violet-800">
+                              {row.vehicle}
+                            </span>
+                          ) : null}
                           {/* THE WORD, NOT JUST THE STRIKETHROUGH - and not just the
                               colour. This page gets photocopied and read on a
                               tablet in poor light, and whether a line is money or

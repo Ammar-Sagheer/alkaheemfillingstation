@@ -21,7 +21,19 @@
 >   nozzles and placeholder suppliers on a new database.
 > - The dip form defaults to **Evening** (`StockCheckForm.js`): this pump reads
 >   and dips after closing, at night. The master defaults to Morning.
+> - **A customer can run a fleet** (migration 801, this repo first): one
+>   account, one credit limit, one balance, and any number of vehicles under
+>   it. Every credit slip and oil sale can say which vehicle took it, the
+>   customer's page shows what each vehicle has taken, the printed statement
+>   names the vehicle on each fill, and the Customers search finds an account
+>   by any of its numbers. No drivers, and no limit per vehicle (his answer).
 > - The backup panel shows only when the Vercel env var `SHOW_BACKUP=true`.
+>
+> **This client's suggestions go to the other pumps too.** The owner of this
+> repo has said so: what Al Hakeem asks for is built here first and then copied
+> to the master and the other client copies. `docs/PORT_TO_OTHER_PUMPS.md` is
+> the list of what is waiting and how to carry each one; add to it whenever a
+> change lands here.
 >
 > The rest of this file, `README.md` and `docs/` describe the master app and its
 > history (including the first pump's), and hold for this one too. The master

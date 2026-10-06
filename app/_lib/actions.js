@@ -311,8 +311,12 @@ export async function saveReading(_prevState, formData) {
      * The sale itself keeps its paisa; the CASH side absorbs the difference,
      * which is where it belongs, cash being the residual and counted in notes.
      */
+    // The vehicle (801) is checked by the database: it must be on this
+    // customer's account and still in use.
+    const vehicleId = String(line?.vehicle_id ?? '').trim();
     cleanedLines.push({
       customer_id: customerId,
+      vehicle_id: /^[0-9a-f-]{36}$/i.test(vehicleId) ? vehicleId : null,
       litres: roundMoney(litres),
       amount: roundRupees(amount),
     });
@@ -1000,6 +1004,11 @@ export async function createLubricantSale(_prevState, formData) {
     credit_amount: credit,
     // A cash sale may still name the customer, but only a credit sale needs to.
     customer_id: customerId || null,
+    // And the vehicle (801), checked by the database against the customer.
+    vehicle_id:
+      customerId && /^[0-9a-f-]{36}$/i.test(text(formData, 'vehicle_id'))
+        ? text(formData, 'vehicle_id')
+        : null,
     note: note || null,
     created_by: profile.id,
   });
@@ -2195,6 +2204,90 @@ export async function updateTank(_prevState, formData) {
   revalidatePath('/admin/settings');
   revalidatePath('/admin');
   return ok('Tank updated.');
+}
+
+// ---------------------------------------------------------------------------
+// A customer's vehicles (Al Hakeem first - migration 801)
+// ---------------------------------------------------------------------------
+
+function vehicleError(error, fallback) {
+  const message = error?.message ?? '';
+  if (message.includes('customer_vehicles_one_active_number')) {
+    return 'That vehicle number is already on an account. A number can be on one account at a time.';
+  }
+  return describe(error, fallback);
+}
+
+export async function addCustomerVehicle(_prevState, formData) {
+  let profile;
+  try {
+    // Staff add customers, so they add vehicles too; only the owner removes.
+    profile = await requireRole(ROLES.SUPER_ADMIN, ROLES.DATA_ENTRY);
+  } catch (error) {
+    return fail(error.message);
+  }
+
+  const customerId = text(formData, 'customer_id');
+  const number = text(formData, 'vehicle_number').replace(/\s+/g, ' ');
+  if (!customerId) return fail('Missing the customer.');
+  if (!number) return fail('Enter the vehicle number.');
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('customer_vehicles')
+    .insert({ customer_id: customerId, vehicle_number: number, created_by: profile.id });
+  if (error) return fail(vehicleError(error, 'Could not add the vehicle.'));
+
+  revalidatePath(`/admin/customers/${customerId}`);
+  revalidatePath('/admin/customers');
+  revalidatePath('/admin/readings');
+  revalidatePath('/admin/lubricants');
+  return ok(`${number} added.`);
+}
+
+export async function removeCustomerVehicle(_prevState, formData) {
+  try {
+    await requireRole(ROLES.SUPER_ADMIN);
+  } catch (error) {
+    return fail(error.message);
+  }
+  const vehicleId = text(formData, 'vehicle_id');
+  const customerId = text(formData, 'customer_id');
+  if (!vehicleId) return fail('Missing the vehicle.');
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('remove_customer_vehicle', { p_vehicle_id: vehicleId });
+  if (error) return fail(vehicleError(error, 'Could not remove the vehicle.'));
+
+  revalidatePath(`/admin/customers/${customerId}`);
+  revalidatePath('/admin/customers');
+  revalidatePath('/admin/readings');
+  revalidatePath('/admin/lubricants');
+  return ok(
+    data === 'retired'
+      ? 'Removed. Its old slips stay on the ledger; it takes no new ones.'
+      : 'Removed.',
+  );
+}
+
+export async function restoreCustomerVehicle(_prevState, formData) {
+  try {
+    await requireRole(ROLES.SUPER_ADMIN);
+  } catch (error) {
+    return fail(error.message);
+  }
+  const vehicleId = text(formData, 'vehicle_id');
+  const customerId = text(formData, 'customer_id');
+  if (!vehicleId) return fail('Missing the vehicle.');
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('restore_customer_vehicle', { p_vehicle_id: vehicleId });
+  if (error) return fail(vehicleError(error, 'Could not bring the vehicle back.'));
+
+  revalidatePath(`/admin/customers/${customerId}`);
+  revalidatePath('/admin/readings');
+  revalidatePath('/admin/lubricants');
+  return ok('Back on the account.');
 }
 
 // ---------------------------------------------------------------------------

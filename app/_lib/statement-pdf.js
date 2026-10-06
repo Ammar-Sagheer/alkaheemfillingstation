@@ -437,7 +437,7 @@ const ROW_SHORT = 19;
  * does not survive a photocopier.
  */
 function drawEntryRow(sheet, row) {
-  const hasSecondLine = Boolean(row.litres || row.fuelType || row.kind === 'correction');
+  const hasSecondLine = Boolean(row.litres || row.fuelType || row.vehicle || row.kind === 'correction');
   const height = hasSecondLine ? ROW_TALL : ROW_SHORT;
   const top = sheet.y;
   const faded = row.kind === 'correction';
@@ -484,6 +484,7 @@ function drawEntryRow(sheet, row) {
       row.reversal ? 'Cancels the entry above' : null,
       row.fuelType ? row.fuelType.charAt(0).toUpperCase() + row.fuelType.slice(1) : null,
       row.litres ? formatLitres(row.litres) : null,
+      row.vehicle ? `Vehicle ${ascii(row.vehicle)}` : null,
     ].filter(Boolean);
     sheet.text(parts.join('  '), {
       x: columnX('detail') + 6,
@@ -871,7 +872,7 @@ export async function buildStatementPdf({ customer, statement }) {
   if (statement.openingCount > 0) drawOpeningBalance(sheet, statement);
 
   for (const row of statement.rows) {
-    sheet.ensure(row.litres || row.fuelType || row.kind === 'correction' ? ROW_TALL : ROW_SHORT);
+    sheet.ensure(row.litres || row.fuelType || row.vehicle || row.kind === 'correction' ? ROW_TALL : ROW_SHORT);
     drawEntryRow(sheet, row);
   }
   sheet.inTable = false;

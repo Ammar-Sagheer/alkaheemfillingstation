@@ -22,8 +22,16 @@
 import { redirect } from 'next/navigation';
 
 import { requireRole, ROLES, todayISO } from '@/app/_lib/helpers';
-import { getCustomerStatement, getLedgerEntriesForStatement } from '@/app/_lib/data-service';
-import { buildAccountStatement, statementRange } from '@/app/_lib/customer-statement';
+import {
+  getCustomerStatement,
+  getCustomerVehicles,
+  getLedgerEntriesForStatement,
+} from '@/app/_lib/data-service';
+import {
+  buildAccountStatement,
+  statementRange,
+  withVehicleNumbers,
+} from '@/app/_lib/customer-statement';
 import { buildStatementPdf, statementFilename } from '@/app/_lib/statement-pdf';
 
 function backToCustomer(id, message) {
@@ -56,9 +64,10 @@ export async function GET(request, { params }) {
   let customer;
   let statement;
   try {
-    const [summary, entries] = await Promise.all([
+    const [summary, entries, vehicles] = await Promise.all([
       getCustomerStatement(id),
       getLedgerEntriesForStatement(id),
+      getCustomerVehicles(id),
     ]);
 
     customer = summary?.customer;
@@ -69,7 +78,7 @@ export async function GET(request, { params }) {
     // The balance comes from customer_balance() in Postgres, not from adding the
     // rows up here - the database owns money totals in this app, and this is the
     // same figure the screen the reader just came from was showing.
-    statement = buildAccountStatement(entries, {
+    statement = buildAccountStatement(withVehicleNumbers(entries, vehicles), {
       asOf,
       balance: Number(summary.balance ?? 0),
       from,

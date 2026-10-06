@@ -46,6 +46,7 @@ export default function CustomerLedgerTable({
   customerId,
   balance = 0,
   canCorrect = false,
+  vehicleNames = {},
 }) {
   if (entries.length === 0) {
     return (
@@ -110,6 +111,13 @@ export default function CustomerLedgerTable({
                         {entry.note ?? (isDebit ? 'Fuel on credit' : 'Payment')}
                       </span>
                       {entry.fuel_type ? <FuelBadge fuelType={entry.fuel_type} /> : null}
+                      {/* Which vehicle on the account took it (801). The
+                          number, never colour alone, so it reads in any light. */}
+                      {entry.vehicle_id && vehicleNames[entry.vehicle_id] ? (
+                        <span className="badge whitespace-nowrap bg-violet-100 font-semibold text-violet-800">
+                          {vehicleNames[entry.vehicle_id]}
+                        </span>
+                      ) : null}
                       {/* Both auto sources wear the badge, not just readings.
                           A lubricant sale posts here the same way and is
                           equally not correctable from this page - leaving it
