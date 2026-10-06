@@ -5,8 +5,12 @@
 > are made there first and copied here, migrations keep the master's numbers,
 > and this repo's own differences are only:
 >
-> - `app/_lib/brand.js` (the name; initials AH until his logo arrives, so
->   `public/logo.png` and the browser icons are absent on purpose).
+> - `app/_lib/brand.js` (the name), `public/logo.png` (the PSO mark he
+>   supplied, already transparent, cropped to the circle, 300px), and
+>   `app/icon.png`, `app/apple-icon.png`, `app/favicon.ico` made from it by
+>   `scripts/build-icons.py`.
+> - `vercel.json` runs his server in `bom1` (Mumbai), beside his Supabase
+>   project in ap-south-1; the master runs in `sin1`.
 > - `supabase/migrations/045_*` is empty: the master's 045 holds another pump's
 >   safe sheet and must never be copied here.
 > - **He sets up his own forecourt** (migration 800, this repo only): the
