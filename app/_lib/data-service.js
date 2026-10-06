@@ -1104,3 +1104,45 @@ export async function getTreasuryDay(date = null) {
 
   return data;
 }
+
+// ---------------------------------------------------------------------------
+// Staff and salaries (802, Al Hakeem first)
+// ---------------------------------------------------------------------------
+
+/**
+ * Everyone on the staff list, active first, with their daily rates for the
+ * owner (staff_rates is the owner's under RLS, so a staff login gets none and
+ * `rates` comes back empty). Retired people are included only when asked for.
+ */
+export async function getStaffMembers({ includeRetired = false } = {}) {
+  const supabase = await createClient();
+  let query = supabase
+    .from('staff_members')
+    .select('id, name, job, phone, is_active, rates:staff_rates(daily_rate, effective_from)');
+  if (!includeRetired) query = query.eq('is_active', true);
+  const rows = unwrap(await query, 'the staff list');
+  return rows
+    .map((row) => ({
+      ...row,
+      rates: [...(row.rates ?? [])].sort((a, b) => (a.effective_from < b.effective_from ? 1 : -1)),
+    }))
+    .sort(
+      (a, b) => Number(b.is_active) - Number(a.is_active) || a.name.localeCompare(b.name, 'en'),
+    );
+}
+
+/** The register for one day: { staff_id: 'present' | 'half' | 'absent' }. */
+export async function getAttendanceForDay(date) {
+  const supabase = await createClient();
+  const rows = unwrap(
+    await supabase.from('staff_attendance').select('staff_id, status').eq('work_date', date),
+    'the attendance',
+  );
+  return Object.fromEntries(rows.map((row) => [row.staff_id, row.status]));
+}
+
+/** The Salaries table for the month holding `monthStart` (YYYY-MM-01), summed in Postgres. */
+export async function getSalaryMonth(monthStart) {
+  const supabase = await createClient();
+  return unwrap(await supabase.rpc('get_salary_month', { p_month: monthStart }), 'the salaries');
+}

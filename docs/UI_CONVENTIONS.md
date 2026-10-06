@@ -3773,3 +3773,17 @@ is the information, so it still reads in grey on a photocopy. A fleet in a
 list is counted ("5 vehicles"), never listed. The pickers live in
 `VehiclePicker.js` (`VehicleSelect`, `VehicleFinder`, `customerLabel`); use
 them rather than a new select on any new credit form.
+
+
+## A register choice is filled in its own colour (Salaries, 802)
+
+`AttendanceRegister` uses the `.seg` track, but the chosen item is filled by
+meaning: Present `bg-brand-700`, Half day `bg-amber-700`, Absent `bg-red-700`,
+white text, the word always on it. A list of thirty people is checked for the
+red ones at a glance; `.seg-item-active`'s single green would make an absent
+day look like the good choice. Use it only where the choices are statuses
+with a good and a bad end, not for a view switch.
+
+**A table's action shares a cell with its figure** when the row ends in one
+(Earned and Pay on Salaries): as separate columns the action is the first
+thing to scroll off a laptop with the sidebar open.

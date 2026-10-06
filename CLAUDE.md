@@ -27,6 +27,11 @@
 >   customer's page shows what each vehicle has taken, the printed statement
 >   names the vehicle on each fill, and the Customers search finds an account
 >   by any of its numbers. No drivers, and no limit per vehicle (his answer).
+> - **Staff attendance and salaries** (migration 802, this repo first):
+>   Salaries in the sidebar (Attendance for a staff login). A daily rate per
+>   person, dated; a register of present / half day / absent; and the month's
+>   pay, summed in Postgres, recorded as one "Salaries" expense per person in
+>   the month worked. A paid month's attendance is closed.
 > - The backup panel shows only when the Vercel env var `SHOW_BACKUP=true`.
 >
 > **This client's suggestions go to the other pumps too.** The owner of this

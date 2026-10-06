@@ -1,4 +1,7 @@
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
+import BadgeOutlined from '@mui/icons-material/BadgeOutlined';
+import EventAvailableOutlined from '@mui/icons-material/EventAvailableOutlined';
+import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import SpeedOutlined from '@mui/icons-material/SpeedOutlined';
 import WaterDropOutlined from '@mui/icons-material/WaterDropOutlined';
 import LocalShippingOutlined from '@mui/icons-material/LocalShippingOutlined';
@@ -210,6 +213,11 @@ const COMPONENTS = {
   // reader.
   moneyIn: CallReceivedOutlined,
   moneyOut: CallMadeOutlined,
+  // Staff and salaries (802): a name badge for the people, a ticked calendar
+  // for the register, notes for the pay.
+  staff: BadgeOutlined,
+  attendance: EventAvailableOutlined,
+  salary: PaymentsOutlined,
 };
 
 /**

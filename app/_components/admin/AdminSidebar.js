@@ -83,6 +83,10 @@ const LINKS = [
   // it would get read as one.
   { href: '/admin/treasury', label: 'Treasury', icon: 'treasury', roles: ['super_admin'] },
   { href: '/admin/expenses', label: 'Expenses', icon: 'expenses', roles: ['super_admin'] },
+  // Staff attendance and pay (802). One page, two names: the owner sees the
+  // pay on it, staff only the register, so each is told what it is for them.
+  { href: '/admin/salaries', label: 'Salaries', icon: 'staff', roles: ['super_admin'] },
+  { href: '/admin/salaries', label: 'Attendance', icon: 'staff', roles: ['data_entry'] },
   // Property the pump has bought and kept, not spending or takings - its own
   // entry beside Expenses and Banking rather than a tab on either, because it
   // answers a different question ("what do we own") from both.

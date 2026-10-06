@@ -8194,3 +8194,47 @@ in the activity log. Tested on a local Postgres with a fleet of five, slips on
 three of them, oil on credit, a removed vehicle refused on a new slip, staff
 refused on remove, and a retire and restore. Rendered at 1366 and 400 px.
 `docs/PORT_TO_OTHER_PUMPS.md` lists it for the master and the other pumps.
+
+
+## Al Hakeem: staff attendance and salaries (migration 802)
+
+The owner asked for a page to keep each staff member's daily attendance
+against a daily rate he sets, to add and remove staff, and to pay salaries
+at the end of the month as an expense that comes off his profit. Before
+this, salaries were typed into Expenses by hand as free text ("salary of
+haseeb and pump tea"), with nothing to check them against.
+
+**Salaries** in the sidebar (**Attendance** for a staff login; same page,
+pay hidden). In the order it is used:
+
+- **Attendance** for the day in the header (`DayHeader`, so the arrows and
+  the jump box work as on Readings): every active person with Present / Half
+  day / Absent. A tap saves at once and the row says "Saving…"; a refusal puts
+  the row back and says why. "Mark the rest present" does the usual case in
+  one tap. The chosen choice is filled in its own colour (green, amber, red)
+  with the word on it.
+- **Salaries, <month>** (owner): Earned / Paid / Still to pay, then a table of
+  each person's daily rate, days worked (full, half, absent, and "not marked"
+  in amber) and earned, with Pay beside it. Pay opens with the register's
+  figure, which can be changed for an advance taken off or a bonus, with a
+  note. For the first fortnight of a month the page warns if anyone in the
+  month before is unpaid, with a link to it.
+- **Staff list** (owner): add (name, job, phone, daily rate, started on),
+  change rate (from a date), remove, bring back.
+
+**Rules in the database**: rates are dated, like fuel prices, so a raise does
+not reprice the past; earned is summed in Postgres in whole rupees
+(`staff_month_earned`); a payment writes the expense itself, dated in the
+month WORKED, so September's wages paid on 2 October still come off
+September's profit; a paid month is closed (attendance and rates refuse in
+words) until the payment is cancelled; no attendance for a day not yet
+come; one active person per name. Rates and pay are the owner's under RLS.
+
+Two layout findings: four day-count columns (Present, Half, Absent, Not
+marked) pushed the Pay button off the card below 1366px, so they became one
+"Days worked" column with the split under the total; and Earned and the
+pay action share a cell, so the action never scrolls away from its figure.
+Tested on a local Postgres: earned across a mid-month raise (Rs 22,400
+against a hand sum), every refusal, staff role limits, cancel reopening the
+month, reset, and a backup round trip that came back identical. Rendered at
+1366, 1024, 800, 400 and 320 px.

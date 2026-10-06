@@ -41,6 +41,9 @@ export const ROUTE_ACCESS = {
   // other. Owner only for the same reason banking is.
   '/admin/treasury': [ROLES.SUPER_ADMIN],
   '/admin/expenses': [ROLES.SUPER_ADMIN],
+  // Attendance is marked at the pump by either role; the rates, the pay and
+  // the staff list on the same page are the owner's (802).
+  '/admin/salaries': [ROLES.SUPER_ADMIN, ROLES.DATA_ENTRY],
   // The owner's own property, not pump operations - same reasoning as banking.
   '/admin/company-assets': [ROLES.SUPER_ADMIN],
   '/admin/reports': [ROLES.SUPER_ADMIN],
