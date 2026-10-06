@@ -1,0 +1,42 @@
+-- =============================================================================
+-- 053_expense_recovery_rows.sql
+--
+-- Lets an expense be reversed, in part, by a later row in the same shape.
+--
+-- THE PROBLEM. The owner pays the full electricity bill upfront - say
+-- Rs 20,000 - and shares the connection with three or four neighbours, who
+-- pay him back one at a time over the following days. Today the only record
+-- is the Rs 20,000 expense, and every rupee that comes back is invisible:
+-- profit is understated by however much gets repaid, permanently.
+--
+-- THE FIX. `expenses.amount` was `check (amount > 0)`. Relaxed to
+-- `check (amount <> 0)`, so a reimbursement can be recorded as an ordinary
+-- expense row with a NEGATIVE amount - same table, same category ("Electricity"),
+-- dated the day the cash actually comes back. Zero is still refused: a zero
+-- expense is not a real event either way.
+--
+-- WHY A NEGATIVE ROW AND NOT A LINKED LEDGER. This was weighed against a
+-- proper receivables table - one row per bill, linked repayments, a running
+-- "outstanding" balance per bill. That is the correct shape for a business
+-- that reliably tracks who owes what. This is a petrol pump with a handful of
+-- Rs 500-1,500 repayments a month, on an app whose owner reads figures off a
+-- tablet against cash in a drawer. A second table is a second thing to get
+-- right, a second RLS policy, a second place `sum()` has to remember to
+-- look - and every number that currently already sums `expenses.amount`
+-- (the month tile, CategoryBreakdown, both reporting RPCs) keeps working with
+-- no changes at all, because a negative row nets out of a sum by definition.
+--
+-- CASH BASIS, ON PURPOSE. The reimbursement is recorded when the neighbour
+-- actually hands over the money, not accrued against the original bill. That
+-- matches how the rest of this app already works - Treasury entries and
+-- credit sales are both recorded when the cash moves, never when it becomes
+-- owed - so this is not a new rule, just the same one applied to expenses.
+--
+-- WHAT THIS DOES NOT CHANGE. Nothing in 005_reporting_rpcs.sql or
+-- 010_month_export_rpc.sql: both already `sum(amount)` over the month's
+-- expense rows, and a negative row nets out of that sum automatically. No new
+-- table, no new RPC, no trigger.
+-- =============================================================================
+
+alter table public.expenses drop constraint expenses_amount_check;
+alter table public.expenses add constraint expenses_amount_check check (amount <> 0);

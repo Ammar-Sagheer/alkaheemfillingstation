@@ -1,0 +1,682 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens.
+
+   This is a tool someone uses every single evening, often on a cheap tablet in
+   a pump office, sometimes in poor light. So: high contrast, large tap targets,
+   numbers in a tabular font so columns line up and a mistyped digit stands out.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-200: #a7f3d0;
+  --color-brand-500: #10b981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+  --color-brand-800: #065f46;
+  --color-brand-900: #064e3b;
+
+  --color-ink-50: #f8fafc;
+  --color-ink-100: #f1f5f9;
+  --color-ink-200: #e2e8f0;
+  --color-ink-300: #cbd5e1;
+  --color-ink-400: #94a3b8;
+  --color-ink-500: #64748b;
+  --color-ink-600: #475569;
+  --color-ink-700: #334155;
+  --color-ink-800: #1e293b;
+  --color-ink-900: #0f172a;
+
+  /*
+   * WHERE THE NAVIGATION STOPS BEING A COLUMN AND BECOMES A BURGER.
+   *
+   * Not a round number and not a guess: the sidebar is 240px and the content
+   * column is capped at 1360px (see app/admin/layout.js), so a window needs
+   * about 1620px before it can hold BOTH at full size. Below that the sidebar
+   * is not free - it is taking width out of the thing being read.
+   *
+   * The old threshold was Tailwind's `lg`, 1024px, which meant a 14in 1600x900
+   * laptop kept a permanent 240px nav column on a physically small screen, and
+   * only dropped it once the window was dragged narrower than 1024. Same
+   * screen, two different answers, and the wrong one at the size the app is
+   * actually used at.
+   *
+   * CHOSEN SO THE CONTENT WIDTH BARELY MOVES ACROSS IT, which is what keeps
+   * the switch from being jarring: at 1600 with a burger the content is its
+   * 1360 cap; at 1620 with the sidebar it is 1348. Twelve pixels. Set this
+   * lower and crossing the breakpoint would visibly reflow the page.
+   */
+  --breakpoint-nav: 1620px;
+
+  /* Kept in step with app/_lib/fuel-colors.js, which is the source of
+     truth for anything that renders a fuel. Petrol is the dark blue, diesel
+     the light orange - see the header of that file for why. */
+  --color-petrol: #075985;
+  --color-diesel: #FDBA74;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-ink-100);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+}
+
+/* Money and litres always line up in columns. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Tailwind v4 no longer gives buttons `cursor: pointer` - its reset leaves them
+ * on the browser default, which is an arrow. The result is an app where nothing
+ * looks clickable. Put it back for everything that responds to a click.
+ */
+button:not(:disabled),
+[role='button']:not(:disabled),
+select:not(:disabled),
+summary,
+label[for] {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+/* On a phone, number inputs should bring up the number pad and never get
+   nudged by an accidental scroll. */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Component classes.
+
+   Tailwind v4 only lets @apply reference real utilities, not other custom
+   classes - so one class here cannot `@apply` another. Each is therefore
+   written out in full rather than composed. Slightly repetitive, but it
+   means a class always works on its own in the markup.
+--------------------------------------------------------------------------- */
+@layer components {
+  /*
+   * `.card`, the old look's surface, is gone: every block on every page is a
+   * `.panel` now (the new look, at the end of this file). Its history - the
+   * border dropped for a shadow, then the shadow softened - is in
+   * docs/CHANGELOG.md.
+   */
+
+  /*
+   * THE READINGS UNIT HEADER'S SURFACE - soft, low-frequency depth over
+   * whatever background-colour the element already has.
+   *
+   * THIS IS THE SECOND ATTEMPT AND THE FIRST ONE IS THE LESSON. It layered
+   * fractal-noise grain and 1px 45-degree hairlines over the band - genuinely
+   * "grainy" and "patterned", and the owner's verdict was that it hurt his
+   * eyes. It would. Both of those are HIGH-FREQUENCY texture: detail at the
+   * scale of one or two pixels, which on a cheap tablet shimmers as the panel
+   * scrolls, can moire against the screen's own pixel grid, and gives an eye
+   * that is 40-plus something to keep trying to focus on that is not there.
+   * The app's whole type and contrast floor exists for that reader; putting
+   * sandpaper behind his headings undoes it.
+   *
+   * SO: NOTHING HERE IS SMALLER THAN THE BAND ITSELF. Every layer is a wide,
+   * soft wash measured in hundreds of pixels, so there is no edge fine enough
+   * to shimmer and nothing to resolve. It still reads as a lit, slightly
+   * curved surface rather than a flat rectangle - which was the actual ask -
+   * but at a scale the eye takes in without working.
+   *
+   *   1. SHEEN - a broad highlight up in the top-left. One light source, so
+   *      the strip reads as curved rather than as a colour with a gradient.
+   *   2. FALLOFF - a matching shadow easing in at the bottom-right, which is
+   *      what makes the sheen read as light on a surface instead of a pale
+   *      patch.
+   *   3. SWEEP - one very wide diagonal band at 5% white, around 300px
+   *      across. This is the "pattern": at that scale it is a sheen across
+   *      the material, not a stripe, and it cannot shimmer because there is
+   *      no repeat small enough to.
+   *   4. BEVEL - inset hairlines, light along the top edge and dark along the
+   *      bottom. The only fine detail left, and it is static: a 1px line ON
+   *      the border is an edge the eye reads once, not a field it has to
+   *      scan.
+   *
+   * IT ADDS NO COLOUR. Every layer is white or black at a low alpha, so the
+   * band is "the fuel's colour, lit" and never a new hue - the only terms on
+   * which a decorative treatment may go near the fuels
+   * (docs/UI_CONVENTIONS.md -> "Two palettes, and they never overlap").
+   * `fuel-colors.js` still owns every hue in the app; this class does not know
+   * which fuel it is sitting on, which is exactly why it works unchanged on
+   * diesel's light orange and petrol's dark blue - the pair that breaks any
+   * treatment built from a fixed colour.
+   */
+  .fuel-band {
+    background-image:
+      radial-gradient(
+        140% 180% at 8% -40%,
+        rgb(255 255 255 / 0.26) 0%,
+        rgb(255 255 255 / 0.08) 38%,
+        rgb(255 255 255 / 0) 68%
+      ),
+      radial-gradient(120% 150% at 96% 140%, rgb(0 0 0 / 0.14) 0%, rgb(0 0 0 / 0) 62%),
+      linear-gradient(
+        104deg,
+        rgb(255 255 255 / 0) 0%,
+        rgb(255 255 255 / 0.05) 44%,
+        rgb(255 255 255 / 0.05) 56%,
+        rgb(255 255 255 / 0) 100%
+      );
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.22),
+      inset 0 -1px 0 rgb(0 0 0 / 0.14);
+  }
+
+  /*
+   * `.unit-card` and `.rate-card`, the four-shadow lifted cards, are gone too:
+   * the Readings units and the Settings rate cards are `.panel`s in the new
+   * look, which carries its own hairline and two-layer shadow.
+   */
+
+  .label {
+    @apply mb-1 block text-base font-medium text-ink-700;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-ink-300 bg-white px-3 py-3 text-base text-ink-900
+           shadow-sm outline-none transition
+           placeholder:text-ink-400
+           focus:border-brand-500 focus:ring-2 focus:ring-brand-200
+           disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-500;
+  }
+
+  /* Meter readings and money: bigger and tabular, so a typo is easy to spot. */
+  .input-number {
+    @apply w-full rounded-xl border border-ink-300 bg-white px-3 py-3 text-xl
+           font-semibold text-ink-900 shadow-sm outline-none transition
+           placeholder:text-ink-400
+           focus:border-brand-500 focus:ring-2 focus:ring-brand-200
+           disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * THE .btn-* CLASSES ARE GONE. Buttons are Material UI now - see
+   * app/_components/ui/Button.js, which maps the app's three intents
+   * (primary / secondary / danger) onto MUI variants. Nothing here styles a
+   * button any more; adding a button style back here would put the app back
+   * to having two button systems, which is what this replaced.
+   */
+
+  /*
+   * The nav column's scrollbar, for the windows where twelve sections do not
+   * fit at once.
+   *
+   * NOT `overflow: hidden`. Sign out is the last thing in that column, and a
+   * list that silently ends above it is worse than a scrollbar - the owner
+   * would have no way to sign out and nothing on screen to say why. The height
+   * is trimmed elsewhere so this fires only on genuinely short windows; when it
+   * does, this makes it a 6px hairline instead of the browser's default slab,
+   * which on Windows is 15px of grey permanently down the side of the nav.
+   */
+  .nav-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink-300) transparent;
+  }
+
+  .nav-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .nav-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .nav-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--color-ink-300);
+    border-radius: 9999px;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm font-semibold;
+  }
+
+  /*
+   * `.section-heading` and `.figure-label` are gone: a block is named by
+   * `SectionHeader` and a figure's caption is `.caption`, in sentence case
+   * (docs/UI_CONVENTIONS.md -> "The new look").
+   *
+   * `.figure-value` stays, for the figures on a Readings nozzle row: the
+   * figure itself larger than the caption above it.
+   */
+  .figure-value {
+    @apply text-lg font-bold text-ink-900;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * SENTENCE CASE, since the new look (September 2026). A column heading is a
+   * caption over figures, and the new look sets every caption in lower case at
+   * 14px - capitals at the caption size were the hardest words on the page to
+   * read in poor light. ink-700, a step darker than a caption, because a
+   * heading names every cell under it.
+   */
+  .th {
+    @apply px-3 py-2 text-left text-sm font-semibold text-ink-700;
+  }
+
+  /*
+   * py-2, not py-3. At a short-height laptop window (900px screen, and a lot
+   * less once the browser's own tabs and address bar take their share) a
+   * table capped at `.table-scroll`'s 70vh was showing two or three rows
+   * before it started scrolling - the row height was doing more work than a
+   * dense list of names and numbers needs. This is a cell's padding, not a
+   * tap target - the row's only click is the name link inside it - so it can
+   * run tighter than the py-3 floor `docs/UI_CONVENTIONS.md` sets for buttons.
+   */
+  .td {
+    @apply px-3 py-2 text-base text-ink-800;
+  }
+
+  /* Figures never wrap - "Rs 2,500,000" split across two lines is unreadable,
+     and "10,000 L" broken after the number looks like two separate values. */
+  .td-num {
+    @apply whitespace-nowrap px-3 py-2 text-right text-base font-medium text-ink-800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * A LINE OF EXPLANATION HAS A MAXIMUM USEFUL LENGTH, and it is not the width
+   * of the page. The content column was widened from 1152px to 1360px for the
+   * 1600x900 laptop this app is read on - which is right for a table, where
+   * every extra pixel is a column that no longer has to be scrolled to, and
+   * wrong for a paragraph, where it is a line the eye has to track back across.
+   *
+   * The paragraphs that needed it carry `max-w-[70ch]` at the call site rather
+   * than a class here, because there are four of them and they are the
+   * multi-sentence notes; a one-line statement of a figure ("2,000 L delivered
+   * on this date, costing Rs 731,200") is not prose and looks wrong boxed into
+   * a narrow measure. The rule is in docs/UI_CONVENTIONS.md.
+   */
+
+  /*
+   * THE NAVIGATION: A COLUMN, OR A BURGER, AND THE READER DECIDES.
+   *
+   * Three classes and one attribute on <html>, rather than Tailwind variants
+   * at each call site, for one reason: FOUR SEPARATE ELEMENTS have to agree
+   * about whether the sidebar is standing there - the column itself, the
+   * burger bar, the drawer, and the padding that keeps content clear of the
+   * column. That last one is applied in two different files (the admin layout
+   * and ReadingsCashUpBar, which is fixed to the bottom of the window and has
+   * to start where the content does). When the breakpoint lived in a Tailwind
+   * variant, moving it meant finding all four; the cash-up bar was missed and
+   * sat indented 240px for a column that was no longer there.
+   *
+   * `data-nav` is written on <html> BY THE SERVER from a cookie, so the first
+   * paint is already right. A preference read on the client instead would show
+   * the wrong layout for a frame and then jump - on every navigation.
+   *
+   *   absent          follow the screen: column at >=1620px, burger below
+   *   data-nav=open   column, from 1024px up - the reader pinned it open
+   *   data-nav=closed burger, at every width - the reader put it away
+   *
+   * 1620 is where a window can hold the 240px column AND the 1360px content
+   * cap at once; below it the column is taking width out of the thing being
+   * read. 1024 is the floor for pinning at all: a 240px column pinned over a
+   * phone leaves nothing to pin it beside.
+   */
+  .nav-column {
+    display: none;
+  }
+
+  .nav-offset {
+    padding-left: 0;
+  }
+
+  @media (min-width: 1620px) {
+    html:not([data-nav='closed']) .nav-column {
+      display: flex;
+    }
+    html:not([data-nav='closed']) .nav-offset {
+      padding-left: 15rem;
+    }
+    html:not([data-nav='closed']) .nav-when-burger {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html[data-nav='open'] .nav-column {
+      display: flex;
+    }
+    html[data-nav='open'] .nav-offset {
+      padding-left: 15rem;
+    }
+    html[data-nav='open'] .nav-when-burger {
+      display: none !important;
+    }
+  }
+
+  /*
+   * BARE-MINIMUM ROW HEIGHT, 1600px and narrower - the exact screen the
+   * owner's friend photographed (1600x900) and everything smaller than it,
+   * where vertical room is the scarcest thing on the page. py-2 is already
+   * tighter than a button's py-3 floor because a row's only click is the name
+   * link inside it, not the row itself; this drops the same cells to py-1
+   * (4px) at and below 1600px width, where a short window means the 70vh
+   * table cap was still only showing a handful of rows. Text size and line
+   * height are untouched - the padding is the only thing being spent, and it
+   * is the one part of the row that was pure air rather than something a
+   * reader needs to see.
+   */
+  @media (max-width: 1600px) {
+    .th,
+    .td,
+    .td-num {
+      @apply py-1;
+    }
+  }
+
+  /*
+   * Tables scroll inside themselves rather than pushing the page sideways, and
+   * are capped in height so the column headings can stay pinned while you read
+   * down a long list. max-height costs nothing on a short table - it only bites
+   * once there is more content than that.
+   *
+   * The height cap is what makes the sticky heading work at all: the wrapper
+   * has to be the thing that scrolls. Left to the page, the heading would have
+   * nothing to stick to.
+   */
+  .table-scroll {
+    @apply -mx-4 max-h-[70vh] overflow-auto px-4 sm:mx-0 sm:px-0;
+  }
+
+  .table-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    /* Must be opaque, or rows show through as they pass underneath. */
+    background-color: var(--color-ink-50);
+    /* A real border does not travel with a sticky cell; an inset shadow does. */
+    box-shadow: inset 0 -1px 0 var(--color-ink-200);
+  }
+
+  /*
+   * A COLUMN PINNED SIDEWAYS, in a table that already pins its heading.
+   *
+   * The Sale & Stock Register is the first table here too wide to read
+   * straight through - ten numeric columns against roughly 750px once the
+   * sidebar has taken its share - and the columns that matter most sit at
+   * either END of it: which day a row is, and where the running totals stand.
+   * Pinning those and letting the working in between slide is what makes it
+   * readable. The horizontal equivalent of the sticky heading above, and it
+   * relies on the same thing: `.table-scroll` is the scrolling element, so a
+   * sticky child has something to stick to.
+   *
+   * THE Z-INDEX IS THE WHOLE REASON THIS IS A CLASS rather than three lines of
+   * `sx` at the call site, and it cost a screenshot to find. The rule above
+   * gives EVERY header cell `z-index: 10`, and it outranks anything Material
+   * UI's `sx` emits - `.table-scroll thead th` is a class plus two elements,
+   * an `sx` class is one class. So a pinned header carrying `z-index: 2` from
+   * `sx` was painted OVER by the ordinary headers it was supposed to cover:
+   * the register's cumulative block slid underneath the daily columns and the
+   * heading read "Litres, %, %" above three figures that were nothing of the
+   * kind. The numbers were right and the header above them was wrong, which is
+   * the worst way for a table to fail.
+   *
+   * So: `.pinned` sets the stacking here, where it can outrank that rule, and
+   * the call site keeps only what genuinely varies - `left` or `right`, and
+   * the column's width. A pinned cell must also be OPAQUE, for the same reason
+   * the sticky heading is.
+   */
+  .table-scroll .pinned {
+    position: sticky;
+    z-index: 2;
+  }
+
+  .table-scroll thead th.pinned {
+    /* Above the ordinary headers (10) as well as the pinned body cells (2):
+       the top-left and top-right corners belong to the heading. */
+    z-index: 12;
+  }
+
+  /*
+   * DELIBERATELY NO background-color HERE, only the stacking. A pinned cell
+   * MUST be opaque - a transparent one lets the row sliding under it show
+   * through - but which opaque colour is the table's business, not the
+   * pattern's: the register's date column is white and its cumulative block is
+   * tinted. Declaring a background here would outrank the `sx` that sets it
+   * and flatten both to one colour, which is the same specificity trap the
+   * z-index note above describes, sprung from the other end. Header cells
+   * already get theirs from `.table-scroll thead th`.
+   */
+
+  /*
+   * The edge that says "the table continues underneath this", rather than
+   * "this number has been cut in half".
+   *
+   * Without it the first screenshot of the register showed a dip reading as
+   * "5,2" against the pinned block and it read as a rendering fault. A border
+   * alone does not do the job - the eye needs the depth cue to know which
+   * layer is on top. Direction matters: the shadow falls AWAY from the pinned
+   * column, over the content sliding past it.
+   */
+  .table-scroll .pinned-left {
+    box-shadow: 6px 0 6px -6px rgb(15 23 42 / 0.25);
+  }
+
+  .table-scroll .pinned-right {
+    box-shadow: -6px 0 6px -6px rgb(15 23 42 / 0.25);
+  }
+
+  /* A pinned HEADER needs both: its own edge shadow and the hairline under the
+     heading row, which the rule above supplies as an inset. One box-shadow
+     property, so they have to be written together or the second wins. */
+  .table-scroll thead th.pinned-left {
+    box-shadow:
+      inset 0 -1px 0 var(--color-ink-200),
+      6px 0 6px -6px rgb(15 23 42 / 0.25);
+  }
+
+  .table-scroll thead th.pinned-right {
+    box-shadow:
+      inset 0 -1px 0 var(--color-ink-200),
+      -6px 0 6px -6px rgb(15 23 42 / 0.25);
+  }
+
+  /*
+   * PINNED ONLY WHERE THERE IS ROOM. The register pins its date on the left
+   * and its three running-total columns on the right: about 28rem of pinned
+   * cells, which a phone's panel (20 to 23rem) does not have. Pinned
+   * regardless, the right-hand block slid over the date and printed
+   * "01 Sep 20". So these cells pin once their `@container` (the table's
+   * panel) is 40rem wide and are ordinary scrolling cells below that.
+   *
+   * The offset arrives as `--pin-right` from the call site rather than as an
+   * inline `right`, because an inline one would apply at every width - and a
+   * header cell is sticky already, for the vertical pin, so on a phone the
+   * headings alone would have stuck to the right edge while their columns
+   * scrolled away underneath them.
+   */
+  @container (min-width: 40rem) {
+    .table-scroll .pinned-right-roomy {
+      position: sticky;
+      z-index: 2;
+      right: var(--pin-right, 0px);
+      box-shadow: -6px 0 6px -6px rgb(15 23 42 / 0.25);
+    }
+
+    .table-scroll thead th.pinned-right-roomy {
+      z-index: 12;
+      box-shadow:
+        inset 0 -1px 0 var(--color-ink-200),
+        -6px 0 6px -6px rgb(15 23 42 / 0.25);
+    }
+  }
+
+  /*
+   * THE GUTTER PAST A PINNED COLUMN, and why the padding has to go rather than
+   * be painted over.
+   *
+   * `.table-scroll` is `-mx-4 px-4` below `sm`, so a table bleeds to the screen
+   * edges instead of sitting in a 16px margin. But a sticky offset is measured
+   * against the SCROLLPORT'S PADDING BOX, so `left: 0` stops 16px short of the
+   * card's edge and leaves a strip of ordinary, scrolling table showing past
+   * the pinned column. On the register's phone screenshot that was a sliver of
+   * the daily percentage column peeping out beyond the cumulative block, and a
+   * few characters of the variance column to the left of the date - both of
+   * which read as a rendering seam rather than as a column.
+   *
+   * Painting over it with an offset box-shadow was tried first and did not
+   * work; the padding simply should not be there on a table with pinned
+   * columns. The bleed still happens - the negative margin is what does that,
+   * and it stays - and the cells' own padding gives the first and last columns
+   * their breathing room. Add this alongside `.table-scroll` on any table that
+   * pins a column.
+   */
+  .table-scroll.has-pinned-columns {
+    @apply px-0;
+  }
+
+  /* =========================================================================
+   * THE NEW LOOK - built on the Dashboard first (September 2026).
+   *
+   * The owner asked for a complete new look on the Dashboard, with the rest of
+   * the site to be brought into line with it afterwards. So these classes are
+   * written for the whole app, not named after the one page using them first -
+   * and every page has since switched to them (September 2026), which is why
+   * `.card`, `.figure-label` and `.section-heading` are no longer above.
+   *
+   * What changed, and what deliberately did not, is in docs/UI_CONVENTIONS.md
+   * -> "The new look". The floors are the same ones the rest of the app keeps:
+   * 16px body, figures never smaller than their labels, money never wrapping,
+   * colour never the only cue, fuel hues never spent on chrome.
+   * ========================================================================= */
+
+  /*
+   * THE SURFACE. What `.card` was to the old look: every block on the page.
+   *
+   * Three things set it apart, and each is there for the reader rather than
+   * for novelty:
+   *
+   *   - A 24px radius rather than 16. Softer, and it separates a panel from the
+   *     smaller rounded things inside it (figure tiles, chips, the tank gauge),
+   *     which at the same radius read as one more panel.
+   *   - A hairline at 6% slate. Not an outline - `.card` dropped its border for
+   *     reading as "a bounded region" - but the edge the shadow alone could not
+   *     give on a washed-out tablet screen. The old `.unit-card` and `.rate-card`
+   *     carried the same hairline for the same reason.
+   *   - Two shadows rather than one: a tight contact line where the panel meets
+   *     the page, and a wide soft lift below it. Slate, not black, so it stays in
+   *     the page's own family instead of going grey and dead on ink-100.
+   *
+   * Faint on purpose. Every block is a panel, and if every block were lifted
+   * far, nothing would read as lifted.
+   */
+  .panel {
+    @apply rounded-3xl bg-white;
+    border: 1px solid rgb(15 23 42 / 0.06);
+    box-shadow:
+      0 1px 2px rgb(15 23 42 / 0.05),
+      0 14px 32px -18px rgb(15 23 42 / 0.22);
+  }
+
+  /*
+   * A square with rounded corners that carries one glyph on a pale ground of
+   * its meaning's hue - the "colourful icons, relevant colours" the owner asked
+   * for, at a size that reads as a picture of the thing (40px, glyph 22px)
+   * rather than a bullet. The colour comes from the caller: pale 100 ground,
+   * 700 glyph, the three-step rule UI_CONVENTIONS.md settled on Company Assets.
+   */
+  .icon-tile {
+    @apply inline-flex shrink-0 items-center justify-center rounded-xl;
+  }
+
+  /*
+   * The caption over or beside a figure, in SENTENCE CASE at 14px.
+   *
+   * The old look's `.figure-label` was 12px, uppercase and tracked. It is the
+   * one part of that look the new one does not carry forward: capitals at the
+   * caption floor are the hardest words on the page to read in poor light, and
+   * lower case reads by its shape. Still smaller and lighter than the figure it
+   * names - the data is bigger than the chrome - and still ink-600, the floor
+   * for anything meant to be read.
+   */
+  .caption {
+    @apply text-sm font-medium text-ink-600;
+  }
+
+  /*
+   * A SEGMENTED CONTROL: a few fixed choices of which exactly one is on - the
+   * chart window, rupees or litres.
+   *
+   * The chosen one is FILLED in the primary green with white text and the rest
+   * are plain, so which is on is told by weight and fill, not by a tint. A
+   * white-on-grey "raised" chip was the fashionable alternative and it is the
+   * one a dim tablet loses first. Targets are 40px tall - larger than the old
+   * chips, a little under the py-3 floor, the same compromise MUI's own buttons
+   * make at the owner's request.
+   *
+   * Written out in full rather than `.seg-item-active` extending `.seg-item`:
+   * Tailwind v4's @apply cannot reference another custom class.
+   */
+  .seg {
+    @apply inline-flex flex-wrap items-center gap-1 rounded-2xl bg-ink-100 p-1 ring-1 ring-inset ring-ink-200;
+  }
+
+  .seg-item {
+    @apply inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl px-4 text-sm font-semibold
+           whitespace-nowrap text-ink-700 transition hover:bg-white hover:text-ink-900
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600;
+  }
+
+  .seg-item-active {
+    @apply inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-brand-700 px-4 text-sm
+           font-semibold whitespace-nowrap text-white shadow-sm;
+  }
+
+  /*
+   * INSIDE A FORM: the four small boxes every entry dialog uses, so twenty
+   * forms say the same kind of thing in the same shape.
+   *
+   *   .callout          a hint - how to fill the field in ("enter litres, not
+   *                     cartons")
+   *   .callout-warn     it can be saved, but look first (will not fit the tank)
+   *   .callout-danger   it will be refused, or it is wrong
+   *   .figure-box       a figure the form has worked out from what was typed
+   *                     (the rate a delivery works out at)
+   *
+   * The hint is 14px, not the 12px most of them were set in: it is read at the
+   * moment of typing, and the caption floor is for captions. `.figure-box` is
+   * where the black running-total boxes went. The new look has no black
+   * surfaces (see Readings in docs/UI_CONVENTIONS.md), and white on near-black
+   * was the one place a figure sat in reversed type, under a caption in grey
+   * capitals at 12px on black - the hardest words in the app to read in a dim
+   * office.
+   */
+  .callout {
+    @apply rounded-xl border border-ink-200 bg-ink-50 px-3.5 py-2.5 text-sm text-ink-700;
+  }
+
+  .callout-warn {
+    @apply rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-900;
+  }
+
+  .callout-danger {
+    @apply rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-800;
+  }
+
+  .figure-box {
+    @apply rounded-xl bg-ink-50 px-4 py-3 ring-1 ring-inset ring-ink-200;
+  }
+}

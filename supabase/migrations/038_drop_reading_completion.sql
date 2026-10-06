@@ -1,0 +1,25 @@
+-- =============================================================================
+-- 038_drop_reading_completion.sql
+--
+-- Removes get_reading_completion(), added one migration ago in 037.
+--
+-- It fed a strip of day tiles above the nozzle list on Readings, meant to show
+-- at a glance which recent days had been entered. The strip was tried three
+-- ways - a band of tiles under the controls, the same tiles inline, then small
+-- circles centred beside the date banner - and none of them earned the room
+-- they took on a screen whose whole job is six nozzles. It is gone, so its
+-- query has nothing left to serve.
+--
+-- THE FEATURE IT WAS PART OF IS NOT GONE. The gap warning above the nozzle
+-- list and the confirm checkbox inside the entry dialog both remain, and both
+-- work off `previous_date`, which get_reading_sheet (009) has always returned.
+-- Those two are what actually stop a day being skipped without noticing; the
+-- strip was decoration on top of them.
+--
+-- Dropped rather than left in place: an unused security-definer function is
+-- surface area nobody is checking, and the next session reading this schema
+-- should not have to work out what calls it. 037 stays in the history as the
+-- record of what was tried.
+-- =============================================================================
+
+drop function if exists public.get_reading_completion(date, date);
