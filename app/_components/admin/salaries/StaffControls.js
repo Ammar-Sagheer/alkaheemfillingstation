@@ -248,7 +248,15 @@ export function RestoreStaffButton({ person }) {
  * earned (from Postgres) and can be changed, for an advance taken off or a
  * bonus; the note says why. The expense lands in the month worked.
  */
-export function PaySalaryButton({ row, monthStart, monthEnd, monthLabel, earnedLabel, daysLabel }) {
+export function PaySalaryButton({
+  row,
+  monthStart,
+  monthEnd,
+  monthLabel,
+  earnedLabel,
+  daysLabel,
+  wide = false,
+}) {
   const d = useDialogAction(paySalary);
   const today = todayISO();
   const [paidOn, setPaidOn] = useState(today);
@@ -256,10 +264,24 @@ export function PaySalaryButton({ row, monthStart, monthEnd, monthLabel, earnedL
 
   return (
     <>
-      <Button variant="primary" type="button" size="small" onClick={() => d.setIsOpen(true)}>
-        <Icon name="salary" className="h-4 w-4" />
-        Pay
-      </Button>
+      {/* Wide on a phone card: the whole width, and the person and the sum
+          on the button itself, so the tap is the decision. */}
+      {wide ? (
+        <Button
+          variant="primary"
+          type="button"
+          onClick={() => d.setIsOpen(true)}
+          sx={{ width: '100%', minHeight: 48 }}
+        >
+          <Icon name="salary" className="h-5 w-5" />
+          Pay {row.name} {earnedLabel}
+        </Button>
+      ) : (
+        <Button variant="primary" type="button" size="small" onClick={() => d.setIsOpen(true)}>
+          <Icon name="salary" className="h-4 w-4" />
+          Pay
+        </Button>
+      )}
       <Dialog
         open={d.isOpen}
         onClose={() => d.setIsOpen(false)}
@@ -333,11 +355,12 @@ export function PaySalaryButton({ row, monthStart, monthEnd, monthLabel, earnedL
   );
 }
 
-export function CancelPaymentButton({ payment, name, amountLabel }) {
+export function CancelPaymentButton({ payment, name, amountLabel, asText = false }) {
   const [state, formAction] = useActionState(cancelSalaryPayment, null);
   return (
     <ConfirmAction
       triggerIcon="close"
+      triggerText={asText ? 'Cancel' : undefined}
       triggerLabel={`Cancel ${name}'s payment`}
       title="Cancel this salary payment?"
       confirmLabel="Yes, cancel it"

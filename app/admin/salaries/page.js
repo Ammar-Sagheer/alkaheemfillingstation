@@ -33,6 +33,9 @@ export default async function SalariesPage({ searchParams }) {
   const monthParam =
     typeof params?.month === 'string' && ISO_MONTH.test(params.month) ? params.month : null;
   const monthStart = `${monthParam ?? date.slice(0, 7)}-01`;
+  // Which half a phone shows (the Attendance | Salaries switch). A laptop
+  // shows both, whatever this says.
+  const tab = params?.tab === 'salaries' ? 'salaries' : 'attendance';
 
   /*
    * Early in a month the pay for the LAST one is what is usually still to do,
@@ -58,6 +61,7 @@ export default async function SalariesPage({ searchParams }) {
       today={today}
       monthStart={monthStart}
       monthParam={monthParam}
+      tab={tab}
       staff={staff}
       attendance={attendance}
       salaries={salaries}

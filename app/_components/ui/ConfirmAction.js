@@ -41,6 +41,10 @@ import Button from '@/app/_components/ui/Button';
 export default function ConfirmAction({
   triggerIcon = 'trash',
   triggerLabel,
+  // A word instead of the icon (Salaries' phone cards: "Cancel" beside a
+  // payment). The icon stays the default; triggerLabel is still the name a
+  // screen reader hears, so it says what is being cancelled.
+  triggerText,
   title,
   confirmLabel,
   pendingLabel,
@@ -64,12 +68,23 @@ export default function ConfirmAction({
 
   return (
     <>
-      <IconButton
-        name={triggerIcon}
-        label={triggerLabel}
-        tone="danger"
-        onClick={() => setOpen(true)}
-      />
+      {triggerText ? (
+        <button
+          type="button"
+          aria-label={triggerLabel}
+          onClick={() => setOpen(true)}
+          className="inline-flex min-h-10 items-center px-1 text-sm font-semibold text-ink-700 underline underline-offset-2 hover:text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        >
+          {triggerText}
+        </button>
+      ) : (
+        <IconButton
+          name={triggerIcon}
+          label={triggerLabel}
+          tone="danger"
+          onClick={() => setOpen(true)}
+        />
+      )}
 
       <Dialog open={open} onClose={close} title={title}>
         <form action={action} className="flex flex-col gap-4 p-5">

@@ -1,4 +1,7 @@
+import Link from 'next/link';
+
 import Button from '@/app/_components/ui/Button';
+import Icon from '@/app/_components/ui/Icon';
 import EmptyState from '@/app/_components/ui/EmptyState';
 import DayHeader from '@/app/_components/admin/dashboard/DayHeader';
 import SectionHeader from '@/app/_components/admin/dashboard/SectionHeader';
@@ -47,7 +50,19 @@ function currentRate(person, today) {
  * top, because it is the thing done every day; the month's pay under it, done
  * once a month; the staff list last, set up once. A staff login sees the
  * register only.
+ *
+ * ON A PHONE, ONE HALF AT A TIME (below a 44rem container). The owner asked
+ * not to scroll for the Pay button: the register for eight people is a screen
+ * and a half before the salaries begin, and the salaries were a table that
+ * scrolled sideways with Pay at its far edge. So a phone gets an Attendance |
+ * Salaries switch at the top (links, so the choice survives the day arrows),
+ * the three total cards become one strip, and each person is a card with the
+ * figure and one wide "Pay Adnan Rs 5,131" button. A laptop shows everything,
+ * as before.
  */
+
+/** Hidden below 44rem when this half is not the one chosen on a phone. */
+const PHONE_HIDDEN = 'hidden @[44rem]:block';
 export default function SalariesView({
   date,
   today,
@@ -59,11 +74,16 @@ export default function SalariesView({
   unpaidLastMonth,
   lastMonthStart,
   isOwner,
+  tab = 'attendance',
 }) {
   const active = staff.filter((person) => person.is_active);
   const retired = staff.filter((person) => !person.is_active);
   const month = monthParts(monthStart);
-  const extraParams = monthParam ? { month: monthParam } : undefined;
+  const onSalaries = isOwner && tab === 'salaries';
+  const extraParams = {
+    ...(monthParam ? { month: monthParam } : {}),
+    ...(onSalaries ? { tab: 'salaries' } : {}),
+  };
   const isFuture = date > today;
 
   // Summed in whole paisa (sumMoney), from figures Postgres worked out.
@@ -72,11 +92,36 @@ export default function SalariesView({
   const toPay = sumMoney(salaries.filter((row) => !row.payment).map((row) => row.earned));
   const unpaidCount = salaries.filter((row) => !row.payment && Number(row.earned) > 0).length;
 
-  const monthHref = (value) => `/admin/salaries?date=${date}&month=${value.slice(0, 7)}`;
+  const monthHref = (value) =>
+    `/admin/salaries?date=${date}&month=${value.slice(0, 7)}&tab=salaries`;
+  const tabHref = (value) =>
+    `/admin/salaries?date=${date}${monthParam ? `&month=${monthParam}` : ''}${
+      value === 'salaries' ? '&tab=salaries' : ''
+    }`;
   const lastMonth = lastMonthStart ? monthParts(lastMonthStart) : null;
 
+  const monthPicker = (id, className) => (
+    <form method="GET" action="/admin/salaries" className={className}>
+      <input type="hidden" name="date" value={date} />
+      <input type="hidden" name="tab" value="salaries" />
+      <label className="sr-only" htmlFor={id}>
+        Month
+      </label>
+      <input
+        id={id}
+        type="month"
+        name="month"
+        defaultValue={monthStart.slice(0, 7)}
+        className="input w-auto py-2"
+      />
+      <Button variant="secondary" type="submit">
+        Show
+      </Button>
+    </form>
+  );
+
   return (
-    <>
+    <div className="@container">
       <DayHeader
         date={date}
         basePath="/admin/salaries"
@@ -84,6 +129,29 @@ export default function SalariesView({
         title={isOwner ? 'Staff and salaries' : 'Staff attendance'}
         icon="staff"
       />
+
+      {/* The phone's switch. Owner only: a staff login has the register alone. */}
+      {isOwner ? (
+        <nav aria-label="Show" className="seg mt-4 grid w-full grid-cols-2 @[44rem]:hidden">
+          {[
+            ['attendance', 'Attendance', 'attendance'],
+            ['salaries', 'Salaries', 'salary'],
+          ].map(([value, label, icon]) => {
+            const isOn = (value === 'salaries') === onSalaries;
+            return (
+              <Link
+                key={value}
+                href={tabHref(value)}
+                aria-current={isOn ? 'page' : undefined}
+                className={isOn ? 'seg-item-active' : 'seg-item'}
+              >
+                <Icon name={icon} className="h-4 w-4" />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+      ) : null}
 
       {isOwner && unpaidLastMonth > 0 && lastMonth ? (
         <Notice tone="warn" icon="salary" title={`${lastMonth.label} is not fully paid`} className="mt-4">
@@ -96,7 +164,10 @@ export default function SalariesView({
       ) : null}
 
       {/* ---------------------------------------------------- the register */}
-      <section aria-labelledby="attendance-heading" className="@container mt-10">
+      <section
+        aria-labelledby="attendance-heading"
+        className={`@container mt-10 ${onSalaries ? PHONE_HIDDEN : ''}`}
+      >
         <SectionHeader
           id="attendance-heading"
           icon="attendance"
@@ -128,32 +199,125 @@ export default function SalariesView({
       {isOwner ? (
         <>
           {/* ---------------------------------------------- the month's pay */}
-          <section aria-labelledby="salaries-heading" className="@container mt-12">
+          <section
+            aria-labelledby="salaries-heading"
+            className={`@container mt-8 @[44rem]:mt-12 ${onSalaries ? '' : PHONE_HIDDEN}`}
+          >
             <SectionHeader
               id="salaries-heading"
               icon="salary"
               tone="money"
               title={`Salaries, ${month.label}`}
-              description="What each person earned from the register, and paying it. A payment goes into Expenses and comes off the month's profit."
+              description="What each person earned from the register, and paying it."
             >
-              <form method="GET" action="/admin/salaries" className="flex flex-wrap items-center gap-2">
-                <input type="hidden" name="date" value={date} />
-                <label className="sr-only" htmlFor="salary-month">
-                  Month
-                </label>
-                <input
-                  id="salary-month"
-                  type="month"
-                  name="month"
-                  defaultValue={monthStart.slice(0, 7)}
-                  className="input w-auto py-2"
-                />
-                <Button variant="secondary" type="submit">
-                  Show
-                </Button>
-              </form>
+              {monthPicker('salary-month', 'hidden flex-wrap items-center gap-2 @[44rem]:flex')}
             </SectionHeader>
 
+            {/* The phone's totals: one strip, not three tall cards. */}
+            {/* Side by side from 22rem; stacked as rows below it, where three
+                six-figure sums no longer fit across (a 360px phone). */}
+            <div
+              data-card
+              className="panel grid grid-cols-1 divide-y divide-ink-200 @[22rem]:grid-cols-3 @[22rem]:divide-x @[22rem]:divide-y-0 @[44rem]:hidden"
+            >
+              {[
+                ['Earned', earned, 'text-ink-900'],
+                ['Paid', paid, 'text-brand-700'],
+                ['To pay', toPay, toPay > 0 ? 'text-red-700' : 'text-ink-900'],
+              ].map(([label, value, color]) => (
+                <div
+                  key={label}
+                  className="flex items-baseline justify-between gap-3 px-4 py-2.5 @[22rem]:block @[22rem]:px-2 @[22rem]:py-3 @[22rem]:text-center"
+                >
+                  <p className="caption">{label}</p>
+                  <p className={`tabular text-lg font-bold whitespace-nowrap @[22rem]:mt-0.5 @[22rem]:text-base @[26rem]:text-lg ${color}`}>
+                    {formatPKR(value)}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* The phone's list: one card per person, and its one action. */}
+            {salaries.length === 0 ? null : (
+              <ul className="mt-4 space-y-3 @[44rem]:hidden">
+                {salaries.map((row) => (
+                  <li
+                    key={row.staff_id}
+                    data-card
+                    className={`panel p-4 ${row.is_active ? '' : 'bg-ink-50/60'}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-lg font-bold text-ink-900">
+                          {row.name}
+                          {row.is_active ? null : (
+                            <span className="badge ml-2 bg-ink-100 align-middle text-sm font-normal text-ink-700">
+                              Removed
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-sm text-ink-600">
+                          {row.job ? `${row.job} · ` : ''}
+                          <span className="whitespace-nowrap">{formatPKR(row.daily_rate)} a day</span>
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="tabular text-xl font-bold whitespace-nowrap text-ink-900">
+                          {formatPKR(row.earned)}
+                        </p>
+                        <p className="text-sm whitespace-nowrap text-ink-600">{days(row.days_worked)} worked</p>
+                      </div>
+                    </div>
+                    <p className="mt-1 text-sm text-ink-600">
+                      {row.present} full, {row.half} half, {row.absent} absent
+                      {Number(row.not_marked) > 0 ? (
+                        <span className="font-semibold text-amber-800">, {row.not_marked} not marked</span>
+                      ) : null}
+                    </p>
+                    <div className="mt-3">
+                      {row.payment ? (
+                        <div className="flex items-center justify-between gap-3 rounded-xl bg-brand-50 px-4 py-2">
+                          <div className="min-w-0">
+                            <p className="font-bold whitespace-nowrap text-brand-800">
+                              <Icon name="check" className="mr-1 inline h-4 w-4 align-[-2px]" />
+                              Paid {formatPKR(row.payment.amount)}
+                            </p>
+                            <p className="text-sm text-ink-600">
+                              on {formatDate(row.payment.paid_on)}
+                              {row.payment.note ? ` · ${row.payment.note}` : ''}
+                            </p>
+                          </div>
+                          <CancelPaymentButton
+                            payment={row.payment}
+                            name={row.name}
+                            amountLabel={formatPKR(row.payment.amount)}
+                            asText
+                          />
+                        </div>
+                      ) : Number(row.earned) > 0 ? (
+                        <PaySalaryButton
+                          wide
+                          row={row}
+                          monthStart={monthStart}
+                          monthEnd={month.end}
+                          monthLabel={month.label}
+                          earnedLabel={formatPKR(row.earned)}
+                          daysLabel={`${days(row.days_worked)} worked: ${row.present} present, ${row.half} half, ${row.absent} absent${Number(row.not_marked) > 0 ? `, ${row.not_marked} not marked` : ''}`}
+                        />
+                      ) : (
+                        <p className="text-sm text-ink-600">Nothing earned this month.</p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* On a phone the month is chosen after the list: it opens on the
+                current month almost every time. */}
+            {monthPicker('salary-month-phone', 'mt-4 flex flex-wrap items-center gap-2 @[44rem]:hidden')}
+
+            <div className="hidden @[44rem]:block">
             <KpiGrid columns={3}>
               <KpiCard label="Earned" value={formatPKR(earned)} icon="attendance" tone="neutral" sub={`${month.label}, from the days marked`} />
               <KpiCard label="Paid" value={formatPKR(paid)} icon="salary" tone="money" sub="Recorded in Expenses" />
@@ -165,9 +329,10 @@ export default function SalariesView({
                 sub={unpaidCount === 0 ? 'Nobody waiting' : unpaidCount === 1 ? '1 person' : `${unpaidCount} people`}
               />
             </KpiGrid>
+            </div>
 
             {salaries.length === 0 ? null : (
-              <div data-card className="panel mt-5 overflow-hidden">
+              <div data-card className="panel mt-5 hidden overflow-hidden @[44rem]:block">
                 <div className="table-scroll mx-0 max-h-none px-0">
                   <table className="w-full min-w-[34rem]">
                     <thead>
@@ -269,7 +434,10 @@ export default function SalariesView({
           </section>
 
           {/* ------------------------------------------------ the people */}
-          <section aria-labelledby="staff-heading" className="@container mt-12">
+          <section
+            aria-labelledby="staff-heading"
+            className={`@container mt-12 ${onSalaries ? '' : PHONE_HIDDEN}`}
+          >
             <SectionHeader
               id="staff-heading"
               icon="staff"
@@ -337,6 +505,6 @@ export default function SalariesView({
           </section>
         </>
       ) : null}
-    </>
+    </div>
   );
 }

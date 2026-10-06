@@ -8250,3 +8250,27 @@ RLS keeps from them: a person's daily rate and month's pay. Read-only. 803
 revokes those two, the four trigger functions and `backup_table_order()` from
 all three roles and proves it. The master's 073/074 carry the same block, so
 the gap never reached it.
+
+
+## Al Hakeem: Salaries on a phone, without scrolling for Pay
+
+The owner, on his phone: "I need to scroll in order to click the pay button."
+The register came first (a screen and more for a few people), then three tall
+total cards, then a table that scrolled sideways with Pay at its far edge.
+Planned as a mock-up first and approved before any code changed.
+
+Below a 44rem container (a phone; a laptop is unchanged):
+
+- **An Attendance | Salaries switch** under the date, owner only (a staff
+  login has the register alone). Links, `?tab=salaries`, carried by the day
+  arrows and the month picker, so the choice survives moving about.
+- **The three total cards become one strip**: Earned, Paid, To pay. Side by
+  side from 22rem; stacked as rows below it, where three six-figure sums cut
+  off at 360px (the render check caught it).
+- **One card per person**: name, job and daily rate, the figure earned and
+  the days worked, and one full-width **"Pay Adnan Rs 5,131"** button, so the
+  tap is the decision. Paid, it becomes "Paid Rs 4,662, on 07 Oct 2026" with
+  a Cancel. The month picker moves under the list.
+
+`ConfirmAction` gains `triggerText` (a word instead of the icon); every
+existing caller is unchanged.

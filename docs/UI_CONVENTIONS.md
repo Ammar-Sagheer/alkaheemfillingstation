@@ -3787,3 +3787,20 @@ with a good and a bad end, not for a view switch.
 **A table's action shares a cell with its figure** when the row ends in one
 (Earned and Pay on Salaries): as separate columns the action is the first
 thing to scroll off a laptop with the sidebar open.
+
+
+## A page of two jobs gets a phone switch (Salaries)
+
+When a page holds a daily job and a monthly one (the register and the pay),
+a phone shows one at a time: a `.seg` of two links at the top, hidden from
+44rem up, where both are on screen anyway. Links, not state, so the day
+arrows and filters carry it (`extraParams`). A section that is not chosen is
+`hidden @[44rem]:block`, never removed, so a laptop is unaffected.
+
+**A table that ends in an action becomes cards on a phone** rather than
+scrolling sideways to it: the figure and a full-width button naming the
+person and the sum ("Pay Adnan Rs 5,131"). Three totals become one strip,
+stacked as rows when the figures no longer fit across.
+
+`ConfirmAction` takes `triggerText` for a word trigger (`Cancel`); the icon
+stays the default. `triggerLabel` is still the accessible name.
