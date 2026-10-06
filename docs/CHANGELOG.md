@@ -8238,3 +8238,15 @@ Tested on a local Postgres: earned across a mid-month raise (Rs 22,400
 against a hand sum), every refusal, staff role limits, cancel reopening the
 month, reset, and a backup round trip that came back identical. Rendered at
 1366, 1024, 800, 400 and 320 px.
+
+
+## Al Hakeem: internal functions closed (migration 803)
+
+Found while porting 801 and 802 to the master (6 Oct 2026): both revoked their
+internal functions from `public, anon` only, the exact gap 072 had closed in
+the master. Supabase grants `authenticated` EXECUTE directly, so any staff
+login could call `staff_rate_on()` and `staff_month_earned()` and read what
+RLS keeps from them: a person's daily rate and month's pay. Read-only. 803
+revokes those two, the four trigger functions and `backup_table_order()` from
+all three roles and proves it. The master's 073/074 carry the same block, so
+the gap never reached it.
