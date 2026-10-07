@@ -8274,3 +8274,20 @@ Below a 44rem container (a phone; a laptop is unchanged):
 
 `ConfirmAction` gains `triggerText` (a word instead of the icon); every
 existing caller is unchanged.
+
+
+## Al Hakeem: Quick entry on the Dashboard (expenses and banking)
+
+The owner asked to record expenses and bank entries from the Dashboard, so
+he does not have to visit Expenses and Banking as often. A "Quick entry"
+strip under the date: **Add expense** (the Expenses page's own dialog) and
+**Bank entry** (Banking's own deposit / withdrawal form, in a dialog), with
+links to both full pages. The same forms, so the same rules and the same
+refusals. With no bank account yet, the button says "Add a bank account" and
+goes to Banking.
+
+`BankTransactionForm` gains `bare` (no panel or heading inside a dialog) and
+`onSaved` (closes the dialog); Banking uses neither. A bank save now also
+refreshes the Dashboard, whose dialog shows the account balances. On a phone
+the two buttons are full width, one above the other: side by side they
+wrapped "Add expense" onto two lines.

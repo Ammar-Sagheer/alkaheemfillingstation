@@ -8,6 +8,7 @@ import {
   getNozzles,
   getCurrentRates,
 } from '@/app/_lib/data-service';
+import { getBankAccounts, getExpenseCategories } from '@/app/_lib/data-service';
 import TitleHeader from '@/app/_components/admin/dashboard/TitleHeader';
 import SetupChecklist from '@/app/_components/admin/dashboard/SetupChecklist';
 import { trendDaysFrom } from '@/app/_components/admin/dashboard/TrendWindow';
@@ -71,11 +72,14 @@ export default async function DashboardPage({ searchParams }) {
   const closedYear = month === 1 ? year - 1 : year;
   const closedMonth = month === 1 ? 12 : month - 1;
 
-  const [summary, trend, lubricantTrend, monthEndStock] = await Promise.all([
+  const [summary, trend, lubricantTrend, monthEndStock, bankAccounts, expenseCategories] = await Promise.all([
     getDailySummary(date),
     getSalesTrend(trendFrom, date),
     getLubricantTrend(trendFrom, date),
     getMonthEndStock(closedYear, closedMonth).catch((error) => ({ error: error.message })),
+    // For the Quick entry strip (Al Hakeem). Neither may take the page down.
+    getBankAccounts().catch(() => []),
+    getExpenseCategories().catch(() => []),
   ]);
 
   return (
@@ -87,6 +91,8 @@ export default async function DashboardPage({ searchParams }) {
       trend={trend}
       lubricantTrend={lubricantTrend}
       monthEndStock={monthEndStock}
+      bankAccounts={bankAccounts}
+      expenseCategories={expenseCategories}
     />
   );
 }

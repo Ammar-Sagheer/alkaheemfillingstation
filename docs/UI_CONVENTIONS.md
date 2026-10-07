@@ -3804,3 +3804,12 @@ stacked as rows when the figures no longer fit across.
 
 `ConfirmAction` takes `triggerText` for a word trigger (`Cancel`); the icon
 stays the default. `triggerLabel` is still the accessible name.
+
+
+## Quick entry reuses the page's own form (Dashboard, Al Hakeem)
+
+An entry offered somewhere else than its own page (the Dashboard's Add
+expense and Bank entry) opens the very same form component in a dialog, never
+a second copy of it: one place for its wording and its rules. A form built as
+a page panel takes `bare` to drop its frame and heading inside a dialog, and
+`onSaved` to close it. A link to the full page sits beside the buttons.

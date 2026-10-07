@@ -67,7 +67,12 @@ function planSplit(amount, primary, covers) {
  * answer is to take the rest from another account. Which accounts, and in which
  * order, is the owner's choice, so it is asked rather than assumed.
  */
-export default function BankTransactionForm({ accounts }) {
+/**
+ * `bare` and `onSaved` are for the Dashboard's Bank entry dialog (Al Hakeem):
+ * no panel of its own and no heading inside the dialog's, and the dialog
+ * closes once a save has gone through. Banking uses neither.
+ */
+export default function BankTransactionForm({ accounts, bare = false, onSaved }) {
   const formRef = useRef(null);
   // The account the form starts on: the one marked as main on Banking
   // (migration 065), else the first one added, as it always was. After a save
@@ -104,7 +109,12 @@ export default function BankTransactionForm({ accounts }) {
   // be there over the next entry, describing something that is no longer on
   // screen - a split payment confirmation hanging over a fresh deposit.
   useEffect(() => {
-    if (state?.ok) setNotice({ message: state.message });
+    if (state?.ok) {
+      setNotice({ message: state.message });
+      onSaved?.();
+    }
+    // onSaved is the caller's; a new function each render must not re-fire this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   const isDeposit = txnType === 'deposit';
@@ -177,12 +187,12 @@ export default function BankTransactionForm({ accounts }) {
     <form
       ref={formRef}
       action={formAction}
-      data-card
-      className="panel h-fit w-full max-w-[36rem] space-y-4 p-5"
+      data-card={bare ? undefined : true}
+      className={bare ? 'w-full space-y-4 p-5' : 'panel h-fit w-full max-w-[36rem] space-y-4 p-5'}
     >
       {/* A heading at a card title's size: it was 14px bold, the size of a
           caption, on the one line saying what the panel is for. */}
-      <h3 className="text-lg font-bold text-ink-900">Record a transaction</h3>
+      {bare ? null : <h3 className="text-lg font-bold text-ink-900">Record a transaction</h3>}
 
       <input type="hidden" name="txn_type" value={txnType} />
 
