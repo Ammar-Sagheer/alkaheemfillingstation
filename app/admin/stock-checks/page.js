@@ -1,4 +1,4 @@
-import { requirePageRole, ROLES, todayISO } from '@/app/_lib/helpers';
+import { requirePageRole, ROLES, todayISO, entryDayISO } from '@/app/_lib/helpers';
 import {
   getExpectedStockForAllTanks,
   getStockChecks,
@@ -30,10 +30,13 @@ export default async function StockChecksPage({ searchParams }) {
 
   const params = await searchParams;
   const page = pageFrom(params);
-  const date =
+  const askedFor =
     typeof params?.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.date)
       ? params.date
-      : todayISO();
+      : null;
+  // After midnight the page opens on the day just traded (entryDayISO).
+  const date = askedFor ?? entryDayISO();
+  const afterMidnight = !askedFor && date !== todayISO();
 
   const [tanks, checks, lubricants] = await Promise.all([
     getExpectedStockForAllTanks(date),
@@ -49,6 +52,7 @@ export default async function StockChecksPage({ searchParams }) {
       checks={checks}
       lubricants={lubricants}
       canManage={profile?.role === ROLES.SUPER_ADMIN}
+      afterMidnight={afterMidnight}
     />
   );
 }

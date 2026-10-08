@@ -1,4 +1,4 @@
-import { requirePageRole, ROLES, todayISO } from '@/app/_lib/helpers';
+import { requirePageRole, ROLES, todayISO, entryDayISO } from '@/app/_lib/helpers';
 import {
   getReadingSheet,
   getCustomers,
@@ -24,10 +24,13 @@ export default async function ReadingsPage({ searchParams }) {
   const profile = await requirePageRole(ROLES.SUPER_ADMIN, ROLES.DATA_ENTRY);
 
   const params = await searchParams;
-  const date =
+  const askedFor =
     typeof params?.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.date)
       ? params.date
-      : todayISO();
+      : null;
+  // After midnight the page opens on the day just traded (entryDayISO).
+  const date = askedFor ?? entryDayISO();
+  const afterMidnight = !askedFor && date !== todayISO();
 
   const [sheet, customers, ratesInForce] = await Promise.all([
     getReadingSheet(date),
@@ -46,6 +49,7 @@ export default async function ReadingsPage({ searchParams }) {
       creditSalesByReading={creditSalesByReading}
       ratesInForce={ratesInForce}
       isOwner={profile.role === ROLES.SUPER_ADMIN}
+      afterMidnight={afterMidnight}
     />
   );
 }

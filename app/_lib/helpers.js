@@ -194,6 +194,7 @@ export async function requirePageRole(...allowedRoles) {
  */
 export {
   todayISO,
+  entryDayISO,
   shiftISODate,
   formatDate,
   formatDateLong,

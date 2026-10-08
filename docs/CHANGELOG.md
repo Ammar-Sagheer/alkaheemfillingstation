@@ -8291,3 +8291,26 @@ goes to Banking.
 refreshes the Dashboard, whose dialog shows the account balances. On a phone
 the two buttons are full width, one above the other: side by side they
 wrapped "Add expense" onto two lines.
+
+## Al Hakeem: after midnight, Readings and Stock open on yesterday
+
+Found 8 Oct 2026, checking his first two days: this pump closes at night and
+its readings and dips are typed after closing, often past midnight. The pages
+opened on "today", so two days of readings and both dips were saved one day
+late (6 Oct's trading as 7 Oct, 7 Oct's as 8 Oct), which also charged 6 Oct's
+litres at 7 Oct's prices (Rs 768.93 too much) and would have refused that
+night's real 8 Oct readings. His deliveries, expenses, oil sales and safe
+entries were dated correctly: he picks those dates himself. The books were put
+right the way the app would, as the owner: both days cleared (credit slips
+reversed, never erased), the readings entered again one day earlier at their
+own day's prices, the dips moved to 6 Oct evening. Every other table hashed
+identical before and after, and every customer balance and both tank stocks
+came out unchanged.
+
+So the mistake cannot recur: before 6 am at the pump (`NIGHT_ENTRY_UNTIL_HOUR`),
+Readings and Stock open on yesterday (`entryDayISO()` in `date-helpers.js`),
+and say so in a notice under the date ("Opened on ..., the day just traded"),
+with Back to today one tap away. A date in the address is always kept, so a
+link or the arrows go where they say. Checked at 23:59, 00:00, 01:01, 05:59,
+06:00 and 11:40 at the pump; both pages rendered at 1366 and 390 px.
+

@@ -47,6 +47,31 @@ export function todayISO() {
 }
 
 /**
+ * The day a figures page opens on: today, except in the small hours.
+ *
+ * This pump closes at night and its readings and dips are typed after closing,
+ * often past midnight. Opened on "today", the page then files the day's
+ * trading against TOMORROW: on 8 Oct 2026 two days of readings and both dips
+ * were found one day late (typed at 1 am, saved as the next day), which also
+ * charged the first day at the next day's prices. Before NIGHT_ENTRY_UNTIL_HOUR
+ * at the pump, the Readings and Stock pages open on yesterday instead, and
+ * say so; the arrows still reach today. A date in the address is always kept.
+ */
+export const NIGHT_ENTRY_UNTIL_HOUR = 6;
+
+const hourFormatter = new Intl.DateTimeFormat('en-GB', {
+  timeZone: PUMP_TIMEZONE,
+  hour: '2-digit',
+  hourCycle: 'h23',
+});
+
+export function entryDayISO(now = new Date()) {
+  const hour = Number(hourFormatter.formatToParts(now).find((part) => part.type === 'hour')?.value);
+  const today = isoDateAtPump(now);
+  return hour < NIGHT_ENTRY_UNTIL_HOUR ? shiftISODate(today, -1) : today;
+}
+
+/**
  * Which calendar day, at the pump, a given instant fell on.
  *
  * todayISO() is this with `now` passed in, and it is split out because the

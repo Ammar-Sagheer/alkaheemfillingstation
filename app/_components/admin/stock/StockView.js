@@ -4,8 +4,9 @@ import Pager from '@/app/_components/ui/Pager';
 import StockCheckForm from '@/app/_components/admin/StockCheckForm';
 import DayHeader from '@/app/_components/admin/dashboard/DayHeader';
 import SectionHeader from '@/app/_components/admin/dashboard/SectionHeader';
+import Notice from '@/app/_components/admin/dashboard/Notice';
 
-import { formatDate } from '@/app/_lib/date-helpers';
+import { formatDate, formatDateLong, shiftISODate } from '@/app/_lib/date-helpers';
 import { formatLitres, formatLitresFine } from '@/app/_lib/format-helpers';
 
 const PER_PAGE = 25;
@@ -26,7 +27,15 @@ const PER_PAGE = 25;
  * Three zones, as before: the two tanks' dips, the lubricant shelf, and the
  * dips already taken. What each one says is unchanged; how it looks moved over.
  */
-export default function StockView({ date, page, tanks, checks, lubricants, canManage }) {
+export default function StockView({
+  date,
+  page,
+  tanks,
+  checks,
+  lubricants,
+  canManage,
+  afterMidnight = false,
+}) {
   const checksOnDate = new Map(
     checks.filter((check) => check.check_date === date).map((check) => [check.tank_id, check]),
   );
@@ -57,6 +66,15 @@ export default function StockView({ date, page, tanks, checks, lubricants, canMa
   return (
     <>
       <DayHeader date={date} basePath="/admin/stock-checks" title="Stock" icon="stock" />
+
+      {/* A dip taken after closing and typed past midnight belongs to the day
+          just traded: the page opened there (entryDayISO). */}
+      {afterMidnight ? (
+        <Notice tone="info" icon="date" title={`Opened on ${formatDateLong(date)}, the day just traded`} className="mt-4">
+          It is after midnight, so a dip taken after closing goes on yesterday evening. For a
+          dip taken this morning, press Back to today ({formatDate(shiftISODate(date, 1))}).
+        </Notice>
+      ) : null}
 
       {/* ================= the tanks ================= */}
       <section aria-labelledby="tanks-heading" className="@container mt-10">

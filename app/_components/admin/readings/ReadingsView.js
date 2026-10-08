@@ -30,6 +30,7 @@ export default function ReadingsView({
   creditSalesByReading,
   ratesInForce = {},
   isOwner,
+  afterMidnight = false,
 }) {
   const today = todayISO();
 
@@ -141,8 +142,16 @@ export default function ReadingsView({
         ) : null}
       </DayHeader>
 
-      {dayGap || missingRate || carriedOver.length > 0 ? (
+      {afterMidnight || dayGap || missingRate || carriedOver.length > 0 ? (
         <div className="mt-4 space-y-3">
+          {/* Typed after closing, past midnight: the page opened on the day
+              just traded, not on the new date (entryDayISO). */}
+          {afterMidnight ? (
+            <Notice tone="info" icon="date" title={`Opened on ${formatDateLong(date)}, the day just traded`}>
+              It is after midnight, so these readings go on yesterday. If you are entering
+              today&apos;s instead, press Back to today ({formatDate(today)}).
+            </Notice>
+          ) : null}
           {dayGap ? (
             <Notice tone="danger" icon="warning">
               <span className="font-semibold">
