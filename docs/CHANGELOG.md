@@ -145,6 +145,8 @@ single read.
 
 Built for Al Hakeem only (migrations 804, 805, 806; run them in order BEFORE the code deploys).
 
+**807 (11 Oct 2026), after he checked the panel against his sheet for 3 Oct:** oil is counted in the total, and credit comes off as its own step (Total sales, less credit, less expenses, less handed in, still to collect). His sheet reproduces to the rupee: 823,890 - 43,559 - 134,950 - 522,000 = 123,381. `get_day_collection` keeps every key 806 returned and adds `total_sales`, `total_credit`, `oil_sales`, `oil_credit`; run 807 BEFORE the panel code deploys, or the panel reads Rs 0.
+
 - **Salaries is now Staff.** An advance of Rs 500 had been entered through Pay with a smaller amount; the one-payment-per-month rule took it as the whole month and locked attendance. Now a payment is an **advance** (month open) or the **settling** payment (closes the month). The row shows Earned, Paid, **Pending** (earned less paid), or "Paid ahead". The old Rs 500 / Rs 3,000 payments read as advances automatically; no row was changed.
 - **Deposit to bank**: one action takes cash from the safe into a bank account, both halves written together and linked, so Treasury and Banking cannot disagree. On Treasury, Expenses, Readings and the Dashboard. Deleting either half removes the other.
 - **The day's entries on Readings** (owner only): expense, bank entry, deposit beside the credit slips.

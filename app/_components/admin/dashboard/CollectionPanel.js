@@ -8,7 +8,7 @@ import { formatDate } from '@/app/_lib/date-helpers';
  * What the staff still owe the owner for the day on screen (806): the one thing
  * Al Hakeem said the Dashboard must show.
  *
- *   cash from the nozzles  -  the day's expenses  =  TO COLLECT
+ *   total sales (fuel + oil) - credit - the day's expenses  =  TO COLLECT
  *   TO COLLECT  -  handed in to the safe          =  STILL TO COLLECT
  *
  * Every figure arrives from Postgres (`get_day_collection`); this page adds
@@ -63,13 +63,13 @@ export default function CollectionPanel({ collection, date }) {
         </p>
       ) : (
         <div className="grid gap-px bg-ink-200 @[44rem]:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.3fr)]">
-          <Step label="Cash from the nozzles" value={formatPKR(collection.fuel_cash)} sub={
-            n(collection.fuel_credit) > 0
-              ? `${formatPKR(collection.fuel_sales)} sold, less ${formatPKR(collection.fuel_credit)} on credit`
-              : 'No credit sales'
+          <Step label="Total sales" value={formatPKR(collection.total_sales)} sub={
+            n(collection.oil_sales) > 0
+              ? `${formatPKR(collection.fuel_sales)} fuel, ${formatPKR(collection.oil_sales)} oil`
+              : 'Fuel at the nozzles'
           } />
+          <Step label="Less credit" value={formatPKR(collection.total_credit)} sub="Not cash, on customers' accounts" sign="−" />
           <Step label="Less expenses" value={formatPKR(collection.expenses)} sub="Paid out today" sign="−" />
-          <Step label="To collect" value={formatPKR(collection.to_collect)} strong />
           <Step label="Less handed in" value={formatPKR(collection.handed_in)} sub="Into the safe today" sign="−" />
           <div className="bg-white px-5 py-4">
             <p className="caption">{state.label}</p>
@@ -77,6 +77,8 @@ export default function CollectionPanel({ collection, date }) {
               {formatPKR(Math.abs(still))}
             </p>
             <p className="text-sm text-ink-600">{state.note}</p>
+            <p className="text-sm text-ink-600">To collect before the safe:{' '}
+              <span className="whitespace-nowrap">{formatPKR(collection.to_collect)}</span></p>
           </div>
         </div>
       )}
