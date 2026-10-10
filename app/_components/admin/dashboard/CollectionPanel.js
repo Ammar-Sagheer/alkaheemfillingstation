@@ -68,9 +68,9 @@ export default function CollectionPanel({ collection, date }) {
               ? `${formatPKR(collection.fuel_sales)} fuel, ${formatPKR(collection.oil_sales)} oil`
               : 'Fuel at the nozzles'
           } />
-          <Step label="Less credit" value={formatPKR(collection.total_credit)} sub="Not cash, on customers' accounts" sign="−" />
-          <Step label="Less expenses" value={formatPKR(collection.expenses)} sub="Paid out today" sign="−" />
-          <Step label="Less handed in" value={formatPKR(collection.handed_in)} sub="Into the safe today" sign="−" />
+          <Step label="Credit" value={formatPKR(collection.total_credit)} sub="Not cash, on customers' accounts" />
+          <Step label="Expenses" value={formatPKR(collection.expenses)} sub="Paid out today" />
+          <Step label="Handed in" value={formatPKR(collection.handed_in)} sub="Into the safe today" />
           <div className="bg-white px-5 py-4">
             <p className="caption">{state.label}</p>
             <p className={`tabular whitespace-nowrap text-3xl font-bold tracking-tight ${state.tone}`}>
