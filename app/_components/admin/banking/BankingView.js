@@ -226,6 +226,7 @@ export default function BankingView({ page, accounts, transactions, total = 0 })
                                     <DeleteBankTransactionButton
                                       transactionId={txn.id}
                                       summary={`${formatPKR(txn.amount)} on ${formatDate(txn.txn_date)}`}
+                                      fromSafe={Boolean(txn.treasury_entry_id)}
                                     />
                                   </td>
                                 </tr>

@@ -19,7 +19,7 @@ import ConfirmAction from '@/app/_components/ui/ConfirmAction';
  * database refuses the delete outright and names the line it broke on; this
  * text is about the ordinary case, where it simply succeeds.
  */
-export default function DeleteTreasuryEntryButton({ entryId, summary }) {
+export default function DeleteTreasuryEntryButton({ entryId, summary, bankDeposit = false }) {
   const [state, formAction] = useActionState(deleteTreasuryEntry, null);
 
   return (
@@ -35,6 +35,11 @@ export default function DeleteTreasuryEntryButton({ entryId, summary }) {
       <p>
         Delete <span className="font-semibold text-ink-900">{summary}</span>?
       </p>
+      {bankDeposit ? (
+        <p className="mt-2">
+          If this was recorded with Deposit to bank, its deposit in the bank account is removed too.
+        </p>
+      ) : null}
       <p className="mt-2">
         Every balance below this line moves by that amount, and so does what the safe is shown as
         holding now.

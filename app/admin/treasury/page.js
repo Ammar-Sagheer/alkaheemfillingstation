@@ -1,5 +1,5 @@
 import { requirePageRole, ROLES } from '@/app/_lib/helpers';
-import { getTreasuryOverview, getTreasuryDay } from '@/app/_lib/data-service';
+import { getTreasuryOverview, getTreasuryDay, getBankAccounts } from '@/app/_lib/data-service';
 import { trendDaysFrom } from '@/app/_components/admin/dashboard/TrendWindow';
 import TreasuryView from '@/app/_components/admin/treasury/TreasuryView';
 
@@ -26,10 +26,20 @@ export default async function TreasuryPage({ searchParams }) {
    */
   const askedFor = /^\d{4}-\d{2}-\d{2}$/.test(params?.date ?? '') ? params.date : null;
 
-  const [overview, dayPage] = await Promise.all([
+  const [overview, dayPage, bankAccounts] = await Promise.all([
     getTreasuryOverview(days),
     getTreasuryDay(askedFor),
+    // For Deposit to bank (805). A failure only hides the button's choices.
+    getBankAccounts().catch(() => []),
   ]);
 
-  return <TreasuryView days={days} askedFor={askedFor} overview={overview} dayPage={dayPage} />;
+  return (
+    <TreasuryView
+      days={days}
+      askedFor={askedFor}
+      overview={overview}
+      dayPage={dayPage}
+      bankAccounts={bankAccounts}
+    />
+  );
 }

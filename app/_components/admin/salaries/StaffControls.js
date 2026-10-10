@@ -244,23 +244,39 @@ export function RestoreStaffButton({ person }) {
 }
 
 /**
- * Paying one person for one month. The amount starts at what the register
- * earned (from Postgres) and can be changed, for an advance taken off or a
- * bonus; the note says why. The expense lands in the month worked.
+ * Paying one person for a month, in one of two ways (804):
+ *
+ *   kind="advance"  Part of the month, given before it is over. The month stays
+ *                   open, attendance can still be marked, and the amount comes
+ *                   off what is pending.
+ *   kind="final"    The payment that settles the month. The amount starts at
+ *                   what is still pending (from Postgres) and can be changed
+ *                   for a bonus or a deduction agreed with the person; the
+ *                   month's attendance then closes.
+ *
+ * Either way it goes into Expenses as Salaries, dated in the month worked, so
+ * profit counts what has been paid out. It used to be one Pay button for the
+ * whole month, which is how a Rs 500 advance came to be recorded as the month's
+ * salary and left Rs 5,994 still showing as earned.
  */
 export function PaySalaryButton({
   row,
+  kind = 'final',
   monthStart,
   monthEnd,
   monthLabel,
   earnedLabel,
+  paidLabel,
+  pendingLabel,
   daysLabel,
   wide = false,
 }) {
+  const isAdvance = kind === 'advance';
   const d = useDialogAction(paySalary);
   const today = todayISO();
   const [paidOn, setPaidOn] = useState(today);
   const expenseDate = paidOn && paidOn < monthEnd ? paidOn : monthEnd;
+  const pending = Math.round(Number(row.pending));
 
   return (
     <>
@@ -268,55 +284,78 @@ export function PaySalaryButton({
           on the button itself, so the tap is the decision. */}
       {wide ? (
         <Button
-          variant="primary"
+          variant={isAdvance ? 'secondary' : 'primary'}
           type="button"
           onClick={() => d.setIsOpen(true)}
           sx={{ width: '100%', minHeight: 48 }}
         >
           <Icon name="salary" className="h-5 w-5" />
-          Pay {row.name} {earnedLabel}
+          {isAdvance ? 'Give an advance' : `Pay balance ${pendingLabel}`}
         </Button>
       ) : (
-        <Button variant="primary" type="button" size="small" onClick={() => d.setIsOpen(true)}>
+        <Button
+          variant={isAdvance ? 'secondary' : 'primary'}
+          type="button"
+          size="small"
+          onClick={() => d.setIsOpen(true)}
+        >
           <Icon name="salary" className="h-4 w-4" />
-          Pay
+          {isAdvance ? 'Advance' : 'Pay balance'}
         </Button>
       )}
       <Dialog
         open={d.isOpen}
         onClose={() => d.setIsOpen(false)}
-        title={`Pay ${row.name} for ${monthLabel}`}
+        title={
+          isAdvance
+            ? `Advance to ${row.name}, ${monthLabel}`
+            : `Pay ${row.name}, ${monthLabel}`
+        }
         subtitle={<span className="text-sm text-ink-600">{daysLabel}</span>}
       >
         <form ref={d.formRef} action={d.formAction} className="space-y-4 p-5">
           <input type="hidden" name="staff_id" value={row.staff_id} />
           <input type="hidden" name="salary_month" value={monthStart} />
-          <div className="figure-box">
-            <p className="caption">Earned from the register</p>
-            <p className="tabular text-2xl font-bold whitespace-nowrap text-ink-900">{earnedLabel}</p>
+          <input type="hidden" name="kind" value={kind} />
+          {/* The sum, in the order it is worked: earned, less what has been
+              paid, leaves what is pending. */}
+          <div className="figure-box grid grid-cols-3 gap-3">
+            <div>
+              <p className="caption">Earned</p>
+              <p className="tabular text-lg font-bold whitespace-nowrap text-ink-900">{earnedLabel}</p>
+            </div>
+            <div>
+              <p className="caption">Paid so far</p>
+              <p className="tabular text-lg font-bold whitespace-nowrap text-brand-700">{paidLabel}</p>
+            </div>
+            <div>
+              <p className="caption">Pending</p>
+              <p className="tabular text-lg font-bold whitespace-nowrap text-red-700">{pendingLabel}</p>
+            </div>
           </div>
           <div className="@container">
             <div className="grid gap-4 @[26rem]:grid-cols-2">
               <div>
-                <label className="label" htmlFor={`pay_${row.staff_id}`}>
-                  Amount paid (Rs)
+                <label className="label" htmlFor={`pay_${kind}_${row.staff_id}`}>
+                  {isAdvance ? 'Advance given (Rs)' : 'Amount paid now (Rs)'}
                 </label>
                 <NumberInput
-                  id={`pay_${row.staff_id}`}
+                  id={`pay_${kind}_${row.staff_id}`}
                   name="amount"
                   step="1"
                   min="1"
                   required
-                  defaultValue={String(Math.round(Number(row.earned)))}
+                  autoFocus={isAdvance}
+                  defaultValue={isAdvance || pending <= 0 ? '' : String(pending)}
                   className="input-number"
                 />
               </div>
               <div>
-                <label className="label" htmlFor={`paid_on_${row.staff_id}`}>
+                <label className="label" htmlFor={`paid_on_${kind}_${row.staff_id}`}>
                   Date paid
                 </label>
                 <input
-                  id={`paid_on_${row.staff_id}`}
+                  id={`paid_on_${kind}_${row.staff_id}`}
                   name="paid_on"
                   type="date"
                   required
@@ -329,25 +368,39 @@ export function PaySalaryButton({
             </div>
           </div>
           <div>
-            <label className="label" htmlFor={`pay_note_${row.staff_id}`}>
+            <label className="label" htmlFor={`pay_note_${kind}_${row.staff_id}`}>
               Note <span className="font-normal text-ink-600">(optional)</span>
             </label>
             <input
-              id={`pay_note_${row.staff_id}`}
+              id={`pay_note_${kind}_${row.staff_id}`}
               name="note"
               type="text"
               autoComplete="off"
-              placeholder="e.g. Advance of Rs 2,000 taken off"
+              placeholder={isAdvance ? 'e.g. For his daughter’s fees' : 'e.g. Bonus of Rs 500 included'}
               className="input"
             />
           </div>
           <p className="callout">
-            Goes into Expenses as Salaries, dated {formatDate(expenseDate)}, so it comes off{' '}
-            {monthLabel}&apos;s profit. The month&apos;s attendance is then closed until the payment is
-            cancelled.
+            {isAdvance ? (
+              <>
+                Goes into Expenses as Salaries, dated {formatDate(expenseDate)}. It comes off what is
+                still to pay, and {monthLabel}&apos;s attendance stays open.
+              </>
+            ) : (
+              <>
+                Goes into Expenses as Salaries, dated {formatDate(expenseDate)}, so it comes off{' '}
+                {monthLabel}&apos;s profit. This <span className="font-semibold">settles the month</span>:
+                its attendance is then closed until the payment is cancelled. For part of it now, use
+                Advance instead.
+              </>
+            )}
           </p>
           <FormMessage state={d.state?.ok === false ? d.state : null} />
-          <Actions label="Record the salary" pending="Saving…" onCancel={() => d.setIsOpen(false)} />
+          <Actions
+            label={isAdvance ? 'Record the advance' : 'Record the payment'}
+            pending="Saving…"
+            onCancel={() => d.setIsOpen(false)}
+          />
         </form>
       </Dialog>
       <Toast notice={d.notice} onDismiss={() => d.setNotice(null)} />
@@ -370,8 +423,10 @@ export function CancelPaymentButton({ payment, name, amountLabel, asText = false
       hidden={{ payment_id: payment.id }}
     >
       <p>
-        {amountLabel} to {name} comes out of Expenses, and the month&apos;s attendance can be changed
-        again. Pay it again once it is right.
+        {amountLabel} to {name} comes out of Expenses and goes back onto what is still to pay.
+        {payment.is_final
+          ? ' The month is no longer settled, so its attendance can be changed again.'
+          : ''}
       </p>
     </ConfirmAction>
   );

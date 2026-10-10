@@ -2620,6 +2620,9 @@ export async function paySalary(_prevState, formData) {
   const month = text(formData, 'salary_month');
   const paidOn = text(formData, 'paid_on');
   const amount = number(formData, 'amount');
+  // 'advance' (804): part of the month, which stays open. Anything else is the
+  // payment that settles it.
+  const isAdvance = text(formData, 'kind') === 'advance';
   if (!staffId || !ISO_DATE.test(month)) return fail('Missing the person or the month.');
   if (!ISO_DATE.test(paidOn)) return fail('Enter the date it was paid.');
   if (amount === null || amount <= 0) return fail('Enter the amount paid, above zero.');
@@ -2631,11 +2634,16 @@ export async function paySalary(_prevState, formData) {
     p_paid_on: paidOn,
     p_amount: amount,
     p_note: text(formData, 'note') || null,
+    p_final: !isAdvance,
   });
-  if (error) return fail(staffError(error, 'Could not record the salary.'));
+  if (error) return fail(staffError(error, isAdvance ? 'Could not record the advance.' : 'Could not record the salary.'));
 
   revalidateSalaries();
-  return ok(`Salary of ${formatPKR(amount)} recorded, and added to Expenses.`);
+  return ok(
+    isAdvance
+      ? `Advance of ${formatPKR(amount)} recorded. It comes off what is still to pay, and is in Expenses.`
+      : `Salary of ${formatPKR(amount)} recorded, and added to Expenses. The month is settled.`,
+  );
 }
 
 export async function cancelSalaryPayment(_prevState, formData) {
@@ -3015,7 +3023,48 @@ export async function deleteBankTransaction(_prevState, formData) {
   if (error) return fail(describe(error, 'Could not remove the transaction.'));
 
   revalidatePath('/admin/banking');
+  // A deposit made from the safe (805) takes its safe entry with it.
+  revalidatePath('/admin/treasury');
+  revalidatePath('/admin');
   return ok('Transaction removed.');
+}
+
+/**
+ * Cash from the safe into a bank account, as ONE entry (805): the safe loses it
+ * and the account gains it, together or not at all. The database does both
+ * halves and links them, so deleting either deletes the other. The safe cannot
+ * pay out cash it does not hold; it says so in its own words.
+ */
+export async function depositToBank(_prevState, formData) {
+  try {
+    await requireRole(ROLES.SUPER_ADMIN);
+  } catch (error) {
+    return fail(error.message);
+  }
+
+  const accountId = text(formData, 'account_id');
+  const amount = number(formData, 'amount');
+  const date = text(formData, 'deposit_date');
+
+  if (!accountId) return fail('Choose which bank account it goes into.');
+  if (amount === null || amount <= 0) return fail('Enter how much is being deposited, above zero.');
+  if (!ISO_DATE.test(date)) return fail('Enter the date of the deposit.');
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('deposit_to_bank', {
+    p_account_id: accountId,
+    p_amount: roundMoney(amount),
+    p_date: date,
+    p_note: text(formData, 'note') || null,
+  });
+  if (error) return fail(describe(error, 'Could not record the deposit.'));
+
+  revalidatePath('/admin/treasury');
+  revalidatePath('/admin/banking');
+  revalidatePath('/admin/expenses');
+  revalidatePath('/admin/readings');
+  revalidatePath('/admin');
+  return ok(data?.message ?? 'Deposit recorded.');
 }
 
 // ---------------------------------------------------------------------------
@@ -3218,6 +3267,10 @@ export async function deleteTreasuryEntry(_prevState, formData) {
   if (error) return fail(describe(error, 'Could not remove the entry.'));
 
   revalidatePath('/admin/treasury');
+  // A safe entry that was a deposit made with Deposit to bank (805) takes its
+  // bank deposit with it.
+  revalidatePath('/admin/banking');
+  revalidatePath('/admin');
   return ok('Entry removed.');
 }
 

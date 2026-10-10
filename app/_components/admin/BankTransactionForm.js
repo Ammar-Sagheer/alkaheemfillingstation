@@ -72,7 +72,7 @@ function planSplit(amount, primary, covers) {
  * no panel of its own and no heading inside the dialog's, and the dialog
  * closes once a save has gone through. Banking uses neither.
  */
-export default function BankTransactionForm({ accounts, bare = false, onSaved }) {
+export default function BankTransactionForm({ accounts, bare = false, onSaved, defaultDate }) {
   const formRef = useRef(null);
   // The account the form starts on: the one marked as main on Banking
   // (migration 065), else the first one added, as it always was. After a save
@@ -380,7 +380,7 @@ export default function BankTransactionForm({ accounts, bare = false, onSaved })
           name="txn_date"
           type="date"
           required
-          defaultValue={todayISO()}
+          defaultValue={defaultDate ?? todayISO()}
           className="input"
         />
       </div>

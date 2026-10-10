@@ -4,6 +4,7 @@ import Icon from '@/app/_components/ui/Icon';
 import PendingLink from '@/app/_components/ui/PendingLink';
 import CategoryBreakdown from '@/app/_components/admin/CategoryBreakdown';
 import ExpenseForm from '@/app/_components/admin/ExpenseForm';
+import DepositToBankForm from '@/app/_components/admin/DepositToBankForm';
 import DeleteExpenseButton from '@/app/_components/admin/DeleteExpenseButton';
 import TitleHeader from '@/app/_components/admin/dashboard/TitleHeader';
 import SectionHeader from '@/app/_components/admin/dashboard/SectionHeader';
@@ -19,7 +20,7 @@ import { formatPKR, sumMoney } from '@/app/_lib/format-helpers';
  * Its own section rather than a block at the bottom of Reports: Reports is read
  * once a month, and an expense is written down the day it is paid.
  */
-export default function ExpensesView({ monthParam, year, month, expenses, usedCategories }) {
+export default function ExpensesView({ monthParam, year, month, expenses, usedCategories, bankAccounts = [] }) {
   const monthName = formatMonth(year, month);
 
   // Added in whole paisa (sumMoney) - these were running double additions.
@@ -80,6 +81,9 @@ export default function ExpensesView({ monthParam, year, month, expenses, usedCa
             out/Recovered switch inside it - see ExpenseForm. */}
         <ExpenseForm used={usedCategories} kind="paid" />
         <ExpenseForm used={usedCategories} kind="recovered" />
+        {/* Cash taken out of the safe to the bank, from here too (Al Hakeem):
+            one entry, in Treasury and in the account (805). */}
+        <DepositToBankForm accounts={bankAccounts} idPrefix="expenses_deposit" />
       </TitleHeader>
 
       {/* THREE CARDS. A "biggest category" card was tried and dropped: a

@@ -46,7 +46,7 @@ const COMMON_CATEGORIES = [
  * no key for - and the sign is applied once, right before `createExpense`
  * runs.
  */
-export default function ExpenseForm({ used = [], kind }) {
+export default function ExpenseForm({ used = [], kind, defaultDate }) {
   const isRecovered = kind === 'recovered';
 
   /*
@@ -96,7 +96,8 @@ export default function ExpenseForm({ used = [], kind }) {
     }
   }, [state]);
 
-  const today = todayISO();
+  // The day on screen where there is one (the Readings page can be on yesterday).
+  const today = defaultDate ?? todayISO();
   // Two instances of this form are mounted on the page at once (one per
   // kind), so every id needs to stay unique between them.
   const idFor = (field) => `${kind}_${field}`;

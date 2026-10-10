@@ -141,6 +141,15 @@ single read.
    file. Every column added since (056, 063, 065, 067) is nullable for this reason,
    and nothing fails until the day an old backup is needed.
 
+## Al Hakeem: Staff advances, deposit to bank, and what the staff still owe (10 Oct 2026)
+
+Built for Al Hakeem only (migrations 804, 805, 806; run them in order BEFORE the code deploys).
+
+- **Salaries is now Staff.** An advance of Rs 500 had been entered through Pay with a smaller amount; the one-payment-per-month rule took it as the whole month and locked attendance. Now a payment is an **advance** (month open) or the **settling** payment (closes the month). The row shows Earned, Paid, **Pending** (earned less paid), or "Paid ahead". The old Rs 500 / Rs 3,000 payments read as advances automatically; no row was changed.
+- **Deposit to bank**: one action takes cash from the safe into a bank account, both halves written together and linked, so Treasury and Banking cannot disagree. On Treasury, Expenses, Readings and the Dashboard. Deleting either half removes the other.
+- **The day's entries on Readings** (owner only): expense, bank entry, deposit beside the credit slips.
+- **Dashboard: To collect from the staff.** Cash from the nozzles (sold less credit) less expenses = to collect; less what reached the safe that day = **still to collect**. Red when owed, green at zero, amber when more was handed in than the day's cash. Worked out in Postgres. Not in it yet: oil cash, direct bank deposits.
+
 ## Foundation
 
 - Next.js App Router app scaffolded: auth flow (Supabase, no public

@@ -1,6 +1,7 @@
 import { requirePageRole, ROLES, todayISO, shiftISODate } from '@/app/_lib/helpers';
 import {
   getDailySummary,
+  getDayCollection,
   getSalesTrend,
   getLubricantTrend,
   getMonthEndStock,
@@ -72,7 +73,7 @@ export default async function DashboardPage({ searchParams }) {
   const closedYear = month === 1 ? year - 1 : year;
   const closedMonth = month === 1 ? 12 : month - 1;
 
-  const [summary, trend, lubricantTrend, monthEndStock, bankAccounts, expenseCategories] = await Promise.all([
+  const [summary, trend, lubricantTrend, monthEndStock, bankAccounts, expenseCategories, collection] = await Promise.all([
     getDailySummary(date),
     getSalesTrend(trendFrom, date),
     getLubricantTrend(trendFrom, date),
@@ -80,6 +81,8 @@ export default async function DashboardPage({ searchParams }) {
     // For the Quick entry strip (Al Hakeem). Neither may take the page down.
     getBankAccounts().catch(() => []),
     getExpenseCategories().catch(() => []),
+    // What the staff still owe for the day (806). A missing migration must not take the page down.
+    getDayCollection(date).catch(() => null),
   ]);
 
   return (
@@ -93,6 +96,7 @@ export default async function DashboardPage({ searchParams }) {
       monthEndStock={monthEndStock}
       bankAccounts={bankAccounts}
       expenseCategories={expenseCategories}
+      collection={collection}
     />
   );
 }

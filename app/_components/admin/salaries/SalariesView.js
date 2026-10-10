@@ -62,6 +62,88 @@ function currentRate(person, today) {
  */
 
 /** Hidden below 44rem when this half is not the one chosen on a phone. */
+/**
+ * What has happened to one person's pay this month, and what to do next (804):
+ * every payment (an advance or the one that settled the month) with its date,
+ * note and a way to cancel it, then what is still pending, then Advance and
+ * Pay balance. The same block on the phone's cards and in the table.
+ */
+function PayBlock({ row, month, monthStart, card = false }) {
+  const earned = Number(row.earned);
+  const paid = Number(row.paid);
+  const pending = Number(row.pending);
+  const payments = row.payments ?? [];
+  const canPay = !row.settled && (earned > 0 || paid > 0);
+  const shared = {
+    row,
+    monthStart,
+    monthEnd: month.end,
+    monthLabel: month.label,
+    earnedLabel: formatPKR(row.earned),
+    paidLabel: formatPKR(row.paid),
+    pendingLabel: formatPKR(Math.max(0, pending)),
+    daysLabel: `${days(row.days_worked)} worked: ${row.present} present, ${row.half} half, ${row.absent} absent${
+      Number(row.not_marked) > 0 ? `, ${row.not_marked} not marked` : ''
+    }`,
+    wide: card,
+  };
+
+  return (
+    <div className={card ? 'space-y-3' : 'space-y-2 text-right'}>
+      {payments.length > 0 ? (
+        <ul className="space-y-1.5">
+          {payments.map((payment) => (
+            <li
+              key={payment.id}
+              className={`flex items-start gap-2 ${card ? 'justify-between rounded-xl bg-brand-50 px-4 py-2' : 'justify-end'}`}
+            >
+              <span className={card ? 'min-w-0' : 'text-right'}>
+                <span className="tabular block font-semibold whitespace-nowrap text-brand-700">
+                  <Icon name="check" className="mr-1 inline h-4 w-4 align-[-2px]" />
+                  {payment.is_final ? 'Paid' : 'Advance'} {formatPKR(payment.amount)}
+                </span>
+                <span className="block text-sm text-ink-600">
+                  {formatDate(payment.paid_on)}
+                  {payment.note ? ` · ${payment.note}` : ''}
+                </span>
+              </span>
+              <CancelPaymentButton
+                payment={payment}
+                name={row.name}
+                amountLabel={formatPKR(payment.amount)}
+                asText={card}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {/* The figure the owner asked for: what is still to pay once the advances
+          are taken off. Earned stays as the month's total above it. */}
+      {row.settled ? (
+        <p className="text-sm font-semibold text-brand-800">Month settled</p>
+      ) : pending < 0 ? (
+        <p className="tabular text-base font-bold whitespace-nowrap text-amber-800">
+          Paid ahead {formatPKR(-pending)}
+        </p>
+      ) : earned > 0 || paid > 0 ? (
+        <p className="tabular text-base font-bold whitespace-nowrap text-red-700">
+          {paid > 0 ? 'Pending' : 'To pay'} {formatPKR(pending)}
+        </p>
+      ) : (
+        <p className="text-sm text-ink-600">Nothing earned this month.</p>
+      )}
+
+      {canPay ? (
+        <div className={card ? 'grid gap-2' : 'flex flex-wrap justify-end gap-2'}>
+          {pending > 0 ? <PaySalaryButton {...shared} kind="final" /> : null}
+          <PaySalaryButton {...shared} kind="advance" />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 const PHONE_HIDDEN = 'hidden @[44rem]:block';
 export default function SalariesView({
   date,
@@ -88,9 +170,13 @@ export default function SalariesView({
 
   // Summed in whole paisa (sumMoney), from figures Postgres worked out.
   const earned = sumMoney(salaries.map((row) => row.earned));
-  const paid = sumMoney(salaries.map((row) => row.payment?.amount ?? 0));
-  const toPay = sumMoney(salaries.filter((row) => !row.payment).map((row) => row.earned));
-  const unpaidCount = salaries.filter((row) => !row.payment && Number(row.earned) > 0).length;
+  // Everything paid so far, advances included (804). What is still pending is
+  // worked out per person in Postgres (earned less paid, and nothing once the
+  // month is settled); a person paid ahead counts as nothing pending, not as a
+  // negative that hides what someone else is owed.
+  const paid = sumMoney(salaries.map((row) => row.paid));
+  const toPay = sumMoney(salaries.map((row) => Math.max(0, Number(row.pending))));
+  const unpaidCount = salaries.filter((row) => Number(row.pending) > 0).length;
 
   const monthHref = (value) =>
     `/admin/salaries?date=${date}&month=${value.slice(0, 7)}&tab=salaries`;
@@ -126,7 +212,7 @@ export default function SalariesView({
         date={date}
         basePath="/admin/salaries"
         extraParams={extraParams}
-        title={isOwner ? 'Staff and salaries' : 'Staff attendance'}
+        title={isOwner ? 'Staff' : 'Staff attendance'}
         icon="staff"
       />
 
@@ -156,7 +242,7 @@ export default function SalariesView({
       {isOwner && unpaidLastMonth > 0 && lastMonth ? (
         <Notice tone="warn" icon="salary" title={`${lastMonth.label} is not fully paid`} className="mt-4">
           {unpaidLastMonth === 1 ? 'One person has' : `${unpaidLastMonth} people have`} days in{' '}
-          {lastMonth.label} with no salary recorded.{' '}
+          {lastMonth.label} with pay still to settle.{' '}
           <a className="font-semibold underline" href={monthHref(lastMonthStart)}>
             Show {lastMonth.label}
           </a>
@@ -275,38 +361,7 @@ export default function SalariesView({
                       ) : null}
                     </p>
                     <div className="mt-3">
-                      {row.payment ? (
-                        <div className="flex items-center justify-between gap-3 rounded-xl bg-brand-50 px-4 py-2">
-                          <div className="min-w-0">
-                            <p className="font-bold whitespace-nowrap text-brand-800">
-                              <Icon name="check" className="mr-1 inline h-4 w-4 align-[-2px]" />
-                              Paid {formatPKR(row.payment.amount)}
-                            </p>
-                            <p className="text-sm text-ink-600">
-                              on {formatDate(row.payment.paid_on)}
-                              {row.payment.note ? ` · ${row.payment.note}` : ''}
-                            </p>
-                          </div>
-                          <CancelPaymentButton
-                            payment={row.payment}
-                            name={row.name}
-                            amountLabel={formatPKR(row.payment.amount)}
-                            asText
-                          />
-                        </div>
-                      ) : Number(row.earned) > 0 ? (
-                        <PaySalaryButton
-                          wide
-                          row={row}
-                          monthStart={monthStart}
-                          monthEnd={month.end}
-                          monthLabel={month.label}
-                          earnedLabel={formatPKR(row.earned)}
-                          daysLabel={`${days(row.days_worked)} worked: ${row.present} present, ${row.half} half, ${row.absent} absent${Number(row.not_marked) > 0 ? `, ${row.not_marked} not marked` : ''}`}
-                        />
-                      ) : (
-                        <p className="text-sm text-ink-600">Nothing earned this month.</p>
-                      )}
+                      <PayBlock row={row} month={month} monthStart={monthStart} card />
                     </div>
                   </li>
                 ))}
@@ -386,39 +441,7 @@ export default function SalariesView({
                             <span className="tabular mb-1.5 block text-lg font-bold whitespace-nowrap text-ink-900">
                               {formatPKR(row.earned)}
                             </span>
-                            {row.payment ? (
-                              <div className="flex items-start justify-end gap-2">
-                                <span className="text-right">
-                                  <span className="tabular block font-semibold whitespace-nowrap text-brand-700">
-                                    Paid {formatPKR(row.payment.amount)}
-                                  </span>
-                                  <span className="block text-sm whitespace-nowrap text-ink-600">
-                                    {formatDate(row.payment.paid_on)}
-                                  </span>
-                                  {row.payment.note ? (
-                                    <span className="block max-w-[12rem] text-sm text-ink-600">
-                                      {row.payment.note}
-                                    </span>
-                                  ) : null}
-                                </span>
-                                <CancelPaymentButton
-                                  payment={row.payment}
-                                  name={row.name}
-                                  amountLabel={formatPKR(row.payment.amount)}
-                                />
-                              </div>
-                            ) : Number(row.earned) > 0 ? (
-                              <PaySalaryButton
-                                row={row}
-                                monthStart={monthStart}
-                                monthEnd={month.end}
-                                monthLabel={month.label}
-                                earnedLabel={formatPKR(row.earned)}
-                                daysLabel={`${days(row.days_worked)} worked: ${row.present} present, ${row.half} half, ${row.absent} absent${Number(row.not_marked) > 0 ? `, ${row.not_marked} not marked` : ''}`}
-                              />
-                            ) : (
-                              <span className="text-sm text-ink-600">Nothing earned</span>
-                            )}
+                            <PayBlock row={row} month={month} monthStart={monthStart} />
                           </td>
                         </tr>
                       ))}

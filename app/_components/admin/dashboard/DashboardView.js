@@ -1,5 +1,6 @@
 import Icon from '@/app/_components/ui/Icon';
 import QuickEntry from '@/app/_components/admin/dashboard/QuickEntry';
+import CollectionPanel from '@/app/_components/admin/dashboard/CollectionPanel';
 import DayHeader from '@/app/_components/admin/dashboard/DayHeader';
 import KpiCard from '@/app/_components/admin/dashboard/KpiCard';
 import SectionHeader from '@/app/_components/admin/dashboard/SectionHeader';
@@ -51,6 +52,7 @@ export default function DashboardView({
   monthEndStock = null,
   bankAccounts = [],
   expenseCategories = [],
+  collection = null,
 }) {
   const totals = summary.totals ?? {};
   const byFuel = summary.by_fuel_type ?? [];
@@ -166,6 +168,8 @@ export default function DashboardView({
       <DayHeader date={date} basePath="/admin" extraParams={{ days: trendDays }} />
 
       <QuickEntry accounts={bankAccounts} usedCategories={expenseCategories} />
+
+      <CollectionPanel collection={collection} date={date} />
 
       {/* ================= the takings ================= */}
       <section aria-labelledby="takings-heading" className="@container mt-5">

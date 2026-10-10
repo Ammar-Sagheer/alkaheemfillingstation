@@ -8,6 +8,7 @@ import Icon from '@/app/_components/ui/Icon';
 import PendingLink from '@/app/_components/ui/PendingLink';
 import ExpenseForm from '@/app/_components/admin/ExpenseForm';
 import BankTransactionForm from '@/app/_components/admin/BankTransactionForm';
+import DepositToBankForm from '@/app/_components/admin/DepositToBankForm';
 
 /**
  * Quick entry on the Dashboard (Al Hakeem asked): an expense and a bank
@@ -15,14 +16,26 @@ import BankTransactionForm from '@/app/_components/admin/BankTransactionForm';
  * same forms as on Expenses and Banking, in dialogs, so the rules, the
  * wording and what the database refuses are the same in both places. The
  * links beside them are for when he wants the list, not just the entry.
+ *
+ * ALSO ON THE READINGS PAGE (Al Hakeem asked): while he enters the day he adds
+ * the day's expense and bank entry too, so it is the same bar with `date` set to
+ * the day on screen (which can be yesterday, after midnight) and a heading of
+ * its own. Deposit to bank (805) moves cash from the safe into an account in one
+ * entry.
  */
-export default function QuickEntry({ accounts = [], usedCategories = [] }) {
+export default function QuickEntry({
+  accounts = [],
+  usedCategories = [],
+  date,
+  heading = 'Quick entry',
+  idPrefix = 'quick',
+}) {
   const [bankOpen, setBankOpen] = useState(false);
 
   return (
-    <section aria-label="Quick entry" data-card className="panel @container mt-4 px-5 py-4">
+    <section aria-label={heading} data-card className="panel @container mt-4 px-5 py-4">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <p className="text-base font-semibold text-ink-800">Quick entry</p>
+        <p className="text-base font-semibold text-ink-800">{heading}</p>
 
         {/* Full width, one above the other, on a phone (side by side they wrapped
             "Add expense" onto two lines); half each from 26rem; their own widths beside the
@@ -30,7 +43,7 @@ export default function QuickEntry({ accounts = [], usedCategories = [] }) {
             button, not the ones inside the dialogs. */}
         <div className="grid w-full grid-cols-1 gap-2 @[26rem]:grid-cols-2 @[40rem]:flex @[40rem]:w-auto @[40rem]:flex-wrap @[40rem]:items-center [&>div>button]:w-full @[40rem]:[&>div>button]:w-auto [&>a]:w-full @[40rem]:[&>a]:w-auto">
           <div>
-            <ExpenseForm used={usedCategories} />
+            <ExpenseForm used={usedCategories} defaultDate={date} />
           </div>
 
           {accounts.length > 0 ? (
@@ -46,6 +59,12 @@ export default function QuickEntry({ accounts = [], usedCategories = [] }) {
               Add a bank account
             </Button>
           )}
+
+          {accounts.length > 0 ? (
+            <div>
+              <DepositToBankForm accounts={accounts} defaultDate={date} idPrefix={`${idPrefix}_deposit`} />
+            </div>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-semibold @[40rem]:ml-auto">
@@ -65,7 +84,7 @@ export default function QuickEntry({ accounts = [], usedCategories = [] }) {
           title="Bank entry"
           subtitle={<span className="text-sm text-ink-600">Money into or out of a bank account</span>}
         >
-          <BankTransactionForm accounts={accounts} bare onSaved={() => setBankOpen(false)} />
+          <BankTransactionForm accounts={accounts} bare onSaved={() => setBankOpen(false)} defaultDate={date} />
         </Dialog>
       ) : null}
     </section>

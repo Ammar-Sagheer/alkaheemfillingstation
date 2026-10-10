@@ -12,7 +12,7 @@ import ConfirmAction from '@/app/_components/ui/ConfirmAction';
  * direction moves the balance twice over, so this gets used - but not from a
  * stray tap on a phone.
  */
-export default function DeleteBankTransactionButton({ transactionId, summary }) {
+export default function DeleteBankTransactionButton({ transactionId, summary, fromSafe = false }) {
   const [state, formAction] = useActionState(deleteBankTransaction, null);
 
   return (
@@ -28,6 +28,12 @@ export default function DeleteBankTransactionButton({ transactionId, summary }) 
       <p>
         Delete <span className="font-semibold text-ink-900">{summary}</span>?
       </p>
+      {fromSafe ? (
+        <p className="mt-2">
+          This deposit came out of the safe (Deposit to bank), so its entry in Treasury is removed
+          too.
+        </p>
+      ) : null}
     </ConfirmAction>
   );
 }

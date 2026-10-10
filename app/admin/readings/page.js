@@ -4,6 +4,8 @@ import {
   getCustomers,
   getCreditSalesForReadings,
   getRatesInForce,
+  getBankAccounts,
+  getExpenseCategories,
 } from '@/app/_lib/data-service';
 import ReadingsView from '@/app/_components/admin/readings/ReadingsView';
 
@@ -32,10 +34,17 @@ export default async function ReadingsPage({ searchParams }) {
   const date = askedFor ?? entryDayISO();
   const afterMidnight = !askedFor && date !== todayISO();
 
-  const [sheet, customers, ratesInForce] = await Promise.all([
+  const isOwner = profile.role === ROLES.SUPER_ADMIN;
+
+  // The day's expense, bank entry and deposit are entered from this page too
+  // (Al Hakeem). Expenses and banking are the owner's, so a staff login neither
+  // sees the bar nor has these read for it; a failure here only hides the bar.
+  const [sheet, customers, ratesInForce, bankAccounts, expenseCategories] = await Promise.all([
     getReadingSheet(date),
     getCustomers(),
     getRatesInForce(date),
+    isOwner ? getBankAccounts().catch(() => []) : Promise.resolve([]),
+    isOwner ? getExpenseCategories().catch(() => []) : Promise.resolve([]),
   ]);
 
   const savedReadingIds = sheet.filter((row) => row.reading_id).map((row) => row.reading_id);
@@ -48,7 +57,9 @@ export default async function ReadingsPage({ searchParams }) {
       customers={customers}
       creditSalesByReading={creditSalesByReading}
       ratesInForce={ratesInForce}
-      isOwner={profile.role === ROLES.SUPER_ADMIN}
+      isOwner={isOwner}
+      bankAccounts={bankAccounts}
+      expenseCategories={expenseCategories}
       afterMidnight={afterMidnight}
     />
   );

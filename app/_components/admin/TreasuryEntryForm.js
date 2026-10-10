@@ -65,7 +65,7 @@ const money = (value) => {
  * find out he is about to type Rs 50,000 out of a safe holding Rs 8,364 while
  * he is looking at the amount box, not after pressing Save.
  */
-export default function TreasuryEntryForm({ balance, trigger = 'header' }) {
+export default function TreasuryEntryForm({ balance, trigger = 'header', linkDeposits = false }) {
   const formRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [direction, setDirection] = useState('in');
@@ -102,7 +102,12 @@ export default function TreasuryEntryForm({ balance, trigger = 'header' }) {
   }, [state]);
 
   const isIn = direction === 'in';
-  const categories = isIn ? TREASURY_IN_CATEGORIES : TREASURY_OUT_CATEGORIES;
+  // With a bank account on file, cash going to the bank is the Deposit to bank
+  // action (805), which also puts it into the account, so it is not offered
+  // here as a hand-typed entry with no bank half.
+  const categories = isIn
+    ? TREASURY_IN_CATEGORIES
+    : TREASURY_OUT_CATEGORIES.filter((item) => !(linkDeposits && item.value === 'bank_deposit'));
   const chosen = categories.find((item) => item.value === category) ?? categories[0];
 
   const held = Number(balance ?? 0);
@@ -275,6 +280,12 @@ export default function TreasuryEntryForm({ balance, trigger = 'header' }) {
                 the choice, so the reader can check they picked the one they
                 meant without knowing the list by heart. */}
             <p className="mt-1 text-sm text-ink-600">{chosen?.hint}</p>
+            {!isIn && linkDeposits ? (
+              <p className="mt-1 text-sm text-ink-600">
+                Taking cash to the bank? Use <span className="font-semibold">Deposit to bank</span>{' '}
+                instead, so it goes into the account as well.
+              </p>
+            ) : null}
           </div>
 
           <div>

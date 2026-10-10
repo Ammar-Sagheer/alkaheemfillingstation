@@ -3,6 +3,7 @@ import Icon from '@/app/_components/ui/Icon';
 import CategoryBreakdown from '@/app/_components/admin/CategoryBreakdown';
 import TreasuryBalanceChart from '@/app/_components/admin/TreasuryBalanceChart';
 import TreasuryEntryForm from '@/app/_components/admin/TreasuryEntryForm';
+import DepositToBankForm from '@/app/_components/admin/DepositToBankForm';
 import DeleteTreasuryEntryButton from '@/app/_components/admin/DeleteTreasuryEntryButton';
 import TreasuryDayNav from '@/app/_components/admin/TreasuryDayNav';
 import TitleHeader from '@/app/_components/admin/dashboard/TitleHeader';
@@ -76,7 +77,7 @@ const BALANCE_PIN_HEAD = { ...BALANCE_PIN, backgroundColor: 'var(--color-ink-50)
  * look at his own money. What it adds is a balance he can trust because a
  * database computed it, a picture of the week, and a reason on every line.
  */
-export default function TreasuryView({ days, askedFor, overview, dayPage }) {
+export default function TreasuryView({ days, askedFor, overview, dayPage, bankAccounts = [] }) {
   const balance = Number(overview?.balance ?? 0);
   const daily = overview?.daily ?? [];
 
@@ -145,7 +146,13 @@ export default function TreasuryView({ days, askedFor, overview, dayPage }) {
       >
         {/* The one thing this page is opened to do, so it is the one button in
             the header rather than a form competing with the table for width. */}
-        {isEmpty ? null : <TreasuryEntryForm balance={balance} />}
+        {isEmpty ? null : (
+          <>
+            <TreasuryEntryForm balance={balance} linkDeposits={bankAccounts.length > 0} />
+            {/* Cash to the bank is one entry that does both halves (805). */}
+            <DepositToBankForm accounts={bankAccounts} idPrefix="treasury_deposit" />
+          </>
+        )}
       </TitleHeader>
 
       {isEmpty ? (
@@ -362,6 +369,7 @@ export default function TreasuryView({ days, askedFor, overview, dayPage }) {
                                   summary={`${formatPKR(entry.amount)} ${
                                     isIn ? 'in' : 'out'
                                   } on ${formatDate(entry.entry_date)}`}
+                                  bankDeposit={entry.category === 'bank_deposit'}
                                 />
                               </span>
                             </td>

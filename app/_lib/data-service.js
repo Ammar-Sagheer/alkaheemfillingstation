@@ -680,6 +680,11 @@ export async function getDailySummary(date) {
   return unwrap(await supabase.rpc('get_daily_summary', { p_date: date }), "the day's summary");
 }
 
+export async function getDayCollection(date) {
+  const supabase = await createClient();
+  return unwrap(await supabase.rpc('get_day_collection', { p_date: date }), "the day's collection");
+}
+
 export async function getSalesTrend(from, to) {
   const supabase = await createClient();
   return unwrap(

@@ -32,6 +32,7 @@
 >   person, dated; a register of present / half day / absent; and the month's
 >   pay, summed in Postgres, recorded as one "Salaries" expense per person in
 >   the month worked. A paid month's attendance is closed.
+> - **Staff advances and part payments** (804), **Deposit to bank** from the safe (805) and the Dashboard's **To collect from the staff** panel (806), plus the Salaries page renamed Staff. See the changelog entry of 10 Oct 2026.
 > - The backup panel shows only when the Vercel env var `SHOW_BACKUP=true`.
 >
 > **This client's suggestions go to the other pumps too.** The owner of this
