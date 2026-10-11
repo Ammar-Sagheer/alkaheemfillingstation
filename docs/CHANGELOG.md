@@ -142,6 +142,15 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## Money received from a customer, in the nozzle form (11 Oct 2026)
+
+Asked for by Al Tufail, built here for Al Hakeem at the owner's request. A
+**Money received** button beside the credit slips in each nozzle's form (and on a
+saved nozzle): who paid, how much, a note. It is the same entry as Record a
+payment on the customer's page (`recordPayment`, dated the day on screen) and
+saves on its own, not with the reading. It is counted in the Dashboard's cash to
+collect by 808, which is already run. No new migration.
+
 ## The Dashboard's cash to collect counts what customers paid in (11 Oct 2026)
 
 Found on Al Tufail's daily sheet, which adds "Receiving" (credit customers paying

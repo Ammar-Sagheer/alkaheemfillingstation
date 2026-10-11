@@ -21,6 +21,7 @@ import Dialog from '@/app/_components/ui/Dialog';
 import Icon from '@/app/_components/ui/Icon';
 import { fuelColor } from '@/app/_lib/fuel-colors';
 import Button from '@/app/_components/ui/Button';
+import ReceivedFromCustomerButton from '@/app/_components/admin/ReceivedFromCustomerButton';
 
 /*
  * Formatting is done inline here rather than imported from helpers.js: that
@@ -337,7 +338,13 @@ export default function ReadingForm({
         }
       >
         {isSaved ? (
-          <SavedReading row={row} date={date} creditSales={creditSales} canDelete={canDelete} />
+          <SavedReading
+            row={row}
+            date={date}
+            customers={customers}
+            creditSales={creditSales}
+            canDelete={canDelete}
+          />
         ) : (
           <EntryForm row={row} date={date} customers={customers} />
         )}
@@ -401,7 +408,7 @@ function formatDayLabel(iso) {
 // Already entered - show what was recorded
 // ---------------------------------------------------------------------------
 
-function SavedReading({ row, date, creditSales, canDelete }) {
+function SavedReading({ row, date, customers, creditSales, canDelete }) {
   const [state, formAction] = useActionState(deleteReading, null);
 
   return (
@@ -441,6 +448,11 @@ function SavedReading({ row, date, creditSales, canDelete }) {
           </ul>
         </div>
       ) : null}
+
+      {/* Money a customer paid at the pump, beside the slips above. */}
+      <div>
+        <ReceivedFromCustomerButton customers={customers} date={date} />
+      </div>
 
       <FormMessage state={state} />
 
@@ -722,6 +734,11 @@ function EntryForm({ row, date, customers }) {
             </span>
             Add customer
           </button>
+        </div>
+
+        {/* Beside the slips: a customer paying money in, at the pump. */}
+        <div className="flex justify-end">
+          <ReceivedFromCustomerButton customers={customers} date={date} />
         </div>
 
         {lines.length === 0 ? (
