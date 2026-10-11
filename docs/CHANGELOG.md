@@ -142,6 +142,17 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## "Money received" now saves from inside a nozzle's form (11 Oct 2026)
+
+Al Tufail's owner pressed **Record the payment** in the Money received dialog and nothing
+happened. Reproduced in a browser: the dialog is a native `<dialog>`, which stays in the DOM where
+it is rendered, and the button sits inside the nozzle's own `<form>`, so its form was nested in
+that one. The browser then reports "A React form was unexpectedly submitted" and neither form
+saves. `ReceivedFromCustomerButton` now renders its dialog into `document.body`, so the payment
+form is a form of its own. Checked in a browser: the submit reaches `recordPayment`, shows its reply
+and does not touch the nozzle form. Any other dialog holding a form must not be rendered inside
+another form: portal it, as this one is.
+
 ## Clear this day asks for a password; a new slip lands at the top (11 Oct 2026)
 
 Al Hakeem's owner pressed **Clear this day** by mistake. Clearing deletes the day's

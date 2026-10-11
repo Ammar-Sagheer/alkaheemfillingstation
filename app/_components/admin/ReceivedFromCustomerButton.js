@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { recordPayment } from '@/app/_lib/actions';
 import SubmitButton from '@/app/_components/ui/SubmitButton';
@@ -31,6 +32,14 @@ export default function ReceivedFromCustomerButton({ customers = [], date }) {
   const [customerId, setCustomerId] = useState('');
   const [notice, setNotice] = useState(null);
 
+  // The dialog is a native <dialog>, which stays in the DOM where it is rendered.
+  // This button sits INSIDE the nozzle's own <form>, so its form was nested in
+  // that one and could never submit ("A React form was unexpectedly submitted":
+  // Record the payment did nothing, 11 Oct 2026). Rendered into document.body
+  // it is a form of its own.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const [state, formAction] = useActionState(recordPayment, null);
   const handled = useRef(state);
   useEffect(() => {
@@ -60,6 +69,8 @@ export default function ReceivedFromCustomerButton({ customers = [], date }) {
         Money received
       </button>
 
+      {mounted
+        ? createPortal(
       <Dialog
         open={isOpen}
         onClose={() => setIsOpen(false)}
@@ -135,7 +146,10 @@ export default function ReceivedFromCustomerButton({ customers = [], date }) {
             </Button>
           </div>
         </form>
-      </Dialog>
+      </Dialog>,
+          document.body,
+        )
+        : null}
 
       <Toast notice={notice} onDismiss={() => setNotice(null)} />
     </>
