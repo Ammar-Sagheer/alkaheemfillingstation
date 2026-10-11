@@ -99,7 +99,8 @@ export default function ClearDayButton({ date, dateLabel, entryCount }) {
 
           <p className="text-base text-ink-700">
             Every nozzle entered for this day is removed so you can type the day again from
-            scratch. Tank stock goes back to what it was before these entries.
+            scratch. Tank stock goes back to what it was before these entries. This cannot be
+            undone, so it asks for your password.
           </p>
 
           <ul className="space-y-2">
@@ -115,6 +116,21 @@ export default function ClearDayButton({ date, dateLabel, entryCount }) {
               Remove those one at a time on their own screens.
             </li>
           </ul>
+
+          {/* A day cannot be un-cleared, so the owner's own password goes first. */}
+          <div>
+            <label className="label" htmlFor="clear_day_password">
+              Your own password
+            </label>
+            <input
+              id="clear_day_password"
+              name="owner_password"
+              type="password"
+              required
+              autoComplete="current-password"
+              className="input"
+            />
+          </div>
 
           {/* Only a failure lands here now - a success has already closed this. */}
           <FormMessage state={result} />

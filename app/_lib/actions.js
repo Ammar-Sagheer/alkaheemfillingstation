@@ -427,14 +427,34 @@ export async function deleteReading(_prevState, formData) {
  * of what happened stays readable.
  */
 export async function clearDay(_prevState, formData) {
+  let profile;
   try {
-    await requireRole(ROLES.SUPER_ADMIN);
+    profile = await requireRole(ROLES.SUPER_ADMIN);
   } catch (error) {
     return fail(error.message);
   }
 
   const date = text(formData, 'date');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail('Missing the date.');
+
+  // The owner's own password, as for a full reset: clearing a day was pressed
+  // by mistake once (11 Oct 2026), and a day cannot be un-cleared.
+  const password = String(formData.get('owner_password') ?? '');
+  if (!password) return fail('Enter your own password to clear the day.');
+  if (!profile.email) return fail('Could not read your email address. Sign in again and retry.');
+
+  const checkClient = createPasswordCheckClient();
+  const { error: checkError } = await checkClient.auth.signInWithPassword({
+    email: profile.email,
+    password,
+  });
+
+  if (checkError) {
+    if (checkError.status === 400 || checkError.code === 'invalid_credentials') {
+      return fail('That is not your password. Nothing has been cleared.');
+    }
+    return fail('Could not reach the server just now. Nothing has been cleared.');
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc('clear_day', { p_date: date });

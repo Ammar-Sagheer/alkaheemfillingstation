@@ -561,11 +561,26 @@ function EntryForm({ row, date, customers }) {
     !overlapsNextDay &&
     (!hasDateGap || skipConfirmed);
 
+  // A new slip goes to the TOP of the list, straight under the Add customer
+  // button, and is brought into view and focused. Appended to the bottom it
+  // landed below the fold of the dialog once a few slips were in, and each one
+  // meant scrolling down to find it (Al Hakeem, 11 Oct 2026).
+  const [newLineKey, setNewLineKey] = useState(null);
+  const newLineRef = useRef(null);
+
+  useEffect(() => {
+    if (!newLineKey || !newLineRef.current) return;
+    newLineRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    newLineRef.current.querySelector('select')?.focus({ preventScroll: true });
+  }, [newLineKey]);
+
   function addLine() {
+    const key = crypto.randomUUID();
     setLines((current) => [
+      { key, customer_id: '', vehicle_id: '', litres: '', amount: '' },
       ...current,
-      { key: crypto.randomUUID(), customer_id: '', vehicle_id: '', litres: '', amount: '' },
     ]);
+    setNewLineKey(key);
   }
 
   function updateLine(key, patch) {
@@ -748,7 +763,11 @@ function EntryForm({ row, date, customers }) {
         ) : (
           <ul className="space-y-2">
             {lines.map((line) => (
-              <li key={line.key} className="rounded-2xl border border-ink-200 bg-ink-50 p-3">
+              <li
+                key={line.key}
+                ref={line.key === newLineKey ? newLineRef : undefined}
+                className="rounded-2xl border border-ink-200 bg-ink-50 p-3"
+              >
                 {/* By vehicle number first (801): the driver knows his truck,
                     not always whose account it is on. Picking it fills both. */}
                 <div className="mb-2">

@@ -142,6 +142,21 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## Clear this day asks for a password; a new slip lands at the top (11 Oct 2026)
+
+Al Hakeem's owner pressed **Clear this day** by mistake. Clearing deletes the day's
+readings and reverses its credit slips, and cannot be taken back, so the dialog now asks
+for the owner's own password, checked the way the full reset checks it (a throwaway
+sign-in; nothing is cleared on a wrong one). An "undo for a few seconds" was considered
+and not built: the readings are deleted and the slips reversed on the ledger, and a
+second action to put them back would be a different, riskier feature than not letting the
+first happen by accident.
+
+The second request was about **Add customer** on a nozzle: the new slip was appended to
+the bottom of the list, which fell below the fold of the dialog once a few slips were in,
+and he had to scroll to find it. It now goes to the top, straight under the button, is
+scrolled into view and its customer box focused.
+
 ## The collection panel ignores cancelled entries (11 Oct 2026, 810)
 
 809 counted every hand-made debit of the day. On 11 Oct, after Al Hakeem cleared
