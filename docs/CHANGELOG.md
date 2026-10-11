@@ -142,6 +142,17 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## The collection panel ignores cancelled entries (11 Oct 2026, 810)
+
+809 counted every hand-made debit of the day. On 11 Oct, after Al Hakeem cleared
+10 Oct and re-entered it, that included the orphans of the cleared credit slips
+(clearing a day deletes the slips; the ledger debit stays with `credit_sale_id`
+null and a reversal credit beside it) and debits cancelled with "correct this
+entry", so the panel read Rs 358,133 of hand credit when Rs 138,501 stood. 810
+counts a debit only if it still stands (not a slip's orphan, which keeps the
+system's own "Fuel taken on credit" note, and not cancelled by a correction), and
+a payment only if it was not cancelled. Applied to his live database on 11 Oct.
+
 ## Customer credit written on the customer's page now reaches the Dashboard (11 Oct 2026)
 
 Al Hakeem gives fuel on credit and often writes it on the customer's own page
