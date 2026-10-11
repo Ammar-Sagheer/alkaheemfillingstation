@@ -142,6 +142,17 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## A warning when a payment is more than the customer owes (11 Oct 2026)
+
+Found while tracing a failed "Money received": the database accepts a payment larger than the
+customer's balance (it simply leaves the account in credit), and the app said nothing, so a mistyped
+amount, or a payment taken ahead of a credit slip that was not saved yet, went through quietly. Both
+payment dialogs (Money received on the Readings page, and Record a payment on the customer's page)
+now show an amber warning under the amount when it is more than the account owes now, saying how far
+over it is. It never blocks saving: money can be taken ahead of a slip. The Readings page now carries
+each customer's balance (`getCustomerBalances`) for this; a failure to read it only drops the warning.
+The warning says plainly that slips typed on the screen but not yet saved are not counted.
+
 ## "Money received" now saves from inside a nozzle's form (11 Oct 2026)
 
 Al Tufail's owner pressed **Record the payment** in the Money received dialog and nothing

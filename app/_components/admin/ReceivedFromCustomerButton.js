@@ -31,6 +31,7 @@ export default function ReceivedFromCustomerButton({ customers = [], date }) {
   const [isOpen, setIsOpen] = useState(false);
   const [customerId, setCustomerId] = useState('');
   const [notice, setNotice] = useState(null);
+  const [amount, setAmount] = useState('');
 
   // The dialog is a native <dialog>, which stays in the DOM where it is rendered.
   // This button sits INSIDE the nozzle's own <form>, so its form was nested in
@@ -48,10 +49,25 @@ export default function ReceivedFromCustomerButton({ customers = [], date }) {
     if (state?.ok) {
       formRef.current?.reset();
       setCustomerId('');
+      setAmount('');
       setIsOpen(false);
       setNotice({ message: `${state.message} It is on the customer's account.` });
     }
   }, [state]);
+
+  // A soft warning, never a block: money can be taken ahead of a slip that is
+  // not saved yet. It says what the account stands at NOW.
+  const picked = customers.find((customer) => customer.id === customerId);
+  const typed = Number(amount);
+  const owed = picked && Number.isFinite(Number(picked.balance)) ? Number(picked.balance) : null;
+  const rupees = (n) => `Rs ${Math.round(n).toLocaleString('en-US')}`;
+  let warning = null;
+  if (picked && owed !== null && Number.isFinite(typed) && typed > 0 && typed > owed) {
+    warning =
+      owed > 0
+        ? `${picked.name} owes ${rupees(owed)} on the account now, and this is ${rupees(typed - owed)} more than that, so the account would be left ${rupees(typed - owed)} in credit. Slips typed on this screen but not saved yet are not counted. Save the reading first if this payment is for them.`
+        : `${picked.name} owes nothing on the account now, so this would leave it ${rupees(typed - Math.max(owed, 0))} in credit. Slips typed on this screen but not saved yet are not counted. Save the reading first if this payment is for them.`;
+  }
 
   return (
     <>
@@ -116,9 +132,12 @@ export default function ReceivedFromCustomerButton({ customers = [], date }) {
               step="1"
               min="1"
               required
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
               className="input-number"
               placeholder="0"
             />
+            {warning ? <p className="callout-warn mt-2">{warning}</p> : null}
           </div>
 
           <div>

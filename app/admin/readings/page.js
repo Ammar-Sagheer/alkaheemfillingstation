@@ -2,6 +2,7 @@ import { requirePageRole, ROLES, todayISO, entryDayISO } from '@/app/_lib/helper
 import {
   getReadingSheet,
   getCustomers,
+  getCustomerBalances,
   getCreditSalesForReadings,
   getRatesInForce,
   getBankAccounts,
@@ -68,6 +69,13 @@ export default async function ReadingsPage({ searchParams }) {
       earliestByTank[check.tank_id] = closes;
     }
   }
+
+  // What each customer owes now, for the warning in Money received. A failure
+  // here only drops the warning.
+  const owedBy = new Map(
+    (await getCustomerBalances().catch(() => [])).map((row) => [row.customer_id, Number(row.balance)]),
+  );
+  for (const customer of customers) customer.balance = owedBy.get(customer.id) ?? null;
 
   const savedReadingIds = sheet.filter((row) => row.reading_id).map((row) => row.reading_id);
   const creditSalesByReading = await getCreditSalesForReadings(savedReadingIds);

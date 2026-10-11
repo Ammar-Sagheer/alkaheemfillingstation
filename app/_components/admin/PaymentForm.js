@@ -34,6 +34,7 @@ export default function PaymentForm({ customerId, balance }) {
   const [isOpen, setIsOpen] = useState(false);
   const [notice, setNotice] = useState(null);
   const [showResult, setShowResult] = useState(false);
+  const [amount, setAmount] = useState('');
 
   const [state, formAction] = useActionState(recordPayment, null);
 
@@ -43,6 +44,7 @@ export default function PaymentForm({ customerId, balance }) {
     handled.current = state;
     if (state?.ok) {
       formRef.current?.reset();
+      setAmount('');
       setIsOpen(false);
       setNotice({ message: state.message });
     }
@@ -106,9 +108,18 @@ export default function PaymentForm({ customerId, balance }) {
               step="0.01"
               min="0.01"
               required
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
               className="input-number"
               placeholder="0"
             />
+            {Number(amount) > owes ? (
+              <p className="callout-warn mt-2">
+                {owes > 0
+                  ? `This account owes Rs ${moneyFormat.format(owes)}. ${moneyFormat.format(Number(amount) - owes)} more than that would leave it in credit.`
+                  : 'This account owes nothing, so this payment would leave it in credit.'}
+              </p>
+            ) : null}
           </div>
 
           <div>
