@@ -34,6 +34,7 @@
 >   the month worked. A paid month's attendance is closed.
 > - **Staff advances and part payments** (804), **Deposit to bank** from the safe (805) and the Dashboard's **To collect from the staff** panel (806), plus the Salaries page renamed Staff. See the changelog entry of 10 Oct 2026.
 > - **Money received from a customer** beside the credit slips in each nozzle's form (`ReceivedFromCustomerButton.js`), the same entry as Record a payment, counted in the Dashboard's cash to collect (808). Asked for by Al Tufail first.
+> - **Oil sale buttons and Record the dip on the Readings page**: the Lubricants and Stock dialogs (`LubricantSaleForm`, `LooseOilSaleForm`, `DailyDipButton.js`) for the day on screen. Asked for by Al Tufail first.
 > - The backup panel shows only when the Vercel env var `SHOW_BACKUP=true`.
 >
 > **This client's suggestions go to the other pumps too.** The owner of this

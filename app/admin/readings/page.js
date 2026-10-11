@@ -6,6 +6,9 @@ import {
   getRatesInForce,
   getBankAccounts,
   getExpenseCategories,
+  getLubricantStock,
+  getExpectedStockForAllTanks,
+  getStockChecks,
 } from '@/app/_lib/data-service';
 import ReadingsView from '@/app/_components/admin/readings/ReadingsView';
 
@@ -39,13 +42,32 @@ export default async function ReadingsPage({ searchParams }) {
   // The day's expense, bank entry and deposit are entered from this page too
   // (Al Hakeem). Expenses and banking are the owner's, so a staff login neither
   // sees the bar nor has these read for it; a failure here only hides the bar.
-  const [sheet, customers, ratesInForce, bankAccounts, expenseCategories] = await Promise.all([
+  const [sheet, customers, ratesInForce, bankAccounts, expenseCategories, oilStock, dipTanks, dipChecks] = await Promise.all([
     getReadingSheet(date),
     getCustomers(),
     getRatesInForce(date),
     isOwner ? getBankAccounts().catch(() => []) : Promise.resolve([]),
     isOwner ? getExpenseCategories().catch(() => []) : Promise.resolve([]),
+    // The oil on the shelf and in the drum, for the Oil sale buttons (Al Tufail's
+    // request, built here too). A failure here only hides the buttons.
+    getLubricantStock(date).catch(() => []),
+    // The tanks and their dips, for the Record the dip button.
+    getExpectedStockForAllTanks(date).catch(() => []),
+    getStockChecks().catch(() => []),
   ]);
+
+  // The same two lookups the Stock page makes: the dip already taken on this
+  // day, and the day each tank's first dip closes (a first dip is measured
+  // against the opening stock, not an earlier dip).
+  const checksByTank = {};
+  const earliestByTank = {};
+  for (const check of dipChecks) {
+    if (check.check_date === date) checksByTank[check.tank_id] = check;
+    const closes = check.books_date ?? check.check_date;
+    if (!earliestByTank[check.tank_id] || closes < earliestByTank[check.tank_id]) {
+      earliestByTank[check.tank_id] = closes;
+    }
+  }
 
   const savedReadingIds = sheet.filter((row) => row.reading_id).map((row) => row.reading_id);
   const creditSalesByReading = await getCreditSalesForReadings(savedReadingIds);
@@ -58,6 +80,11 @@ export default async function ReadingsPage({ searchParams }) {
       creditSalesByReading={creditSalesByReading}
       ratesInForce={ratesInForce}
       isOwner={isOwner}
+      dipTanks={dipTanks}
+      checksByTank={checksByTank}
+      earliestByTank={earliestByTank}
+      oilProducts={oilStock.filter((row) => row.is_active && !row.sold_loose)}
+      oilDrums={oilStock.filter((row) => row.is_active && row.sold_loose)}
       bankAccounts={bankAccounts}
       expenseCategories={expenseCategories}
       afterMidnight={afterMidnight}

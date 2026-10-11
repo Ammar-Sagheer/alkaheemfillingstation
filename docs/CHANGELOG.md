@@ -142,6 +142,16 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## Oil sale and the day's dip, from the Readings page (11 Oct 2026)
+
+Asked for by Al Tufail, built here for Al Hakeem at the owner's request. The two
+oil dialogs (packed oil, loose oil) and **Record the dip** (the Stock page's
+per-tank dip form in a dialog, `DailyDipButton.js`) are in the Readings header
+row for the day on screen, so they are entered with the day's readings without
+going to Lubricants or Stock and picking the date again. The same forms and
+actions as on those pages; no migration. This copy has no tank dip charts, so the
+dip form is the litres one.
+
 ## Money received from a customer, in the nozzle form (11 Oct 2026)
 
 Asked for by Al Tufail, built here for Al Hakeem at the owner's request. A

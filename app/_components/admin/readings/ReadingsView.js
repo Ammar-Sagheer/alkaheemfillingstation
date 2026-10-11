@@ -3,6 +3,9 @@ import ReadingForm from '@/app/_components/admin/ReadingForm';
 import ClearDayButton from '@/app/_components/admin/ClearDayButton';
 import ReadingsCashUpBar from '@/app/_components/admin/ReadingsCashUpBar';
 import DayHeader from '@/app/_components/admin/dashboard/DayHeader';
+import DailyDipButton from '@/app/_components/admin/DailyDipButton';
+import LubricantSaleForm from '@/app/_components/admin/LubricantSaleForm';
+import LooseOilSaleForm from '@/app/_components/admin/LooseOilSaleForm';
 import QuickEntry from '@/app/_components/admin/dashboard/QuickEntry';
 import KpiCard from '@/app/_components/admin/dashboard/KpiCard';
 import Notice from '@/app/_components/admin/dashboard/Notice';
@@ -31,6 +34,11 @@ export default function ReadingsView({
   creditSalesByReading,
   ratesInForce = {},
   isOwner,
+  dipTanks = [],
+  checksByTank = {},
+  earliestByTank = {},
+  oilProducts = [],
+  oilDrums = [],
   bankAccounts = [],
   expenseCategories = [],
   afterMidnight = false,
@@ -140,9 +148,38 @@ export default function ReadingsView({
           against the wrong date is the mistake it exists for, and it poisons
           every day after, because each opening comes from the day before). */}
       <DayHeader date={date} basePath="/admin/readings" title="Daily readings" icon="readings">
-        {isOwner ? (
-          <ClearDayButton date={date} dateLabel={formatDate(date)} entryCount={done.length} />
-        ) : null}
+        {/* OIL SALE and the DAY'S DIP, from the readings page (asked for by Al
+            Tufail, built here too): the same dialogs as on Lubricants and Stock,
+            for the day on screen, so they are entered with the day's readings
+            without going to those pages and picking the date again. */}
+        <div className="flex flex-wrap items-center gap-2">
+          {oilProducts.length > 0 ? (
+            <LubricantSaleForm
+              lubricants={oilProducts}
+              customers={customers}
+              date={date}
+              dateLabel={formatDate(date)}
+            />
+          ) : null}
+          {oilDrums.length > 0 ? (
+            <LooseOilSaleForm
+              drums={oilDrums}
+              customers={customers}
+              date={date}
+              dateLabel={formatDate(date)}
+            />
+          ) : null}
+          <DailyDipButton
+            tanks={dipTanks}
+            date={date}
+            checksByTank={checksByTank}
+            earliestByTank={earliestByTank}
+            canManage={isOwner}
+          />
+          {isOwner ? (
+            <ClearDayButton date={date} dateLabel={formatDate(date)} entryCount={done.length} />
+          ) : null}
+        </div>
       </DayHeader>
 
       {/* The day's expense, bank entry and cash to the bank, entered with the
