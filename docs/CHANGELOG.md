@@ -141,6 +141,19 @@ single read.
    file. Every column added since (056, 063, 065, 067) is nullable for this reason,
    and nothing fails until the day an old backup is needed.
 
+
+## The Dashboard's cash to collect counts what customers paid in (11 Oct 2026)
+
+Found on Al Tufail's daily sheet, which adds "Receiving" (credit customers paying
+over the counter) into the total sale before taking off credit and expenses; the
+panel had everything but that and read short by the receiving. Migration 808
+adds `ledger_entries.is_payment` (nullable, set by Record a payment only, since a
+credit entry can also be a reversal or an adjustment) and `received` to
+`get_day_collection`; the panel shows a Received figure. **Run 808 before this
+deploys:** Record a payment writes the new column. Payments before 808 are not
+counted. Al Tufail also has a Money received button in the nozzle form; that is
+his alone.
+
 ## Al Hakeem: Staff advances, deposit to bank, and what the staff still owe (10 Oct 2026)
 
 Built for Al Hakeem only (migrations 804, 805, 806; run them in order BEFORE the code deploys).

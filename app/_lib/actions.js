@@ -1458,6 +1458,8 @@ export async function recordPayment(_prevState, formData) {
     amount: paid,
     entry_date: entryDate,
     note: note || 'Payment received',
+    // Marks it as a customer's payment, for the Dashboard's cash to collect (808).
+    is_payment: true,
     created_by: profile.id,
   });
 
@@ -1465,6 +1467,9 @@ export async function recordPayment(_prevState, formData) {
 
   revalidatePath(`/admin/customers/${customerId}`);
   revalidatePath('/admin/customers');
+  // The Readings page and the Dashboard show it too (the day's cash).
+  revalidatePath('/admin/readings');
+  revalidatePath('/admin');
   return ok('Payment recorded.');
 }
 

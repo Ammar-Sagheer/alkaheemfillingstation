@@ -5,10 +5,11 @@ import { formatPKR } from '@/app/_lib/format-helpers';
 import { formatDate } from '@/app/_lib/date-helpers';
 
 /**
- * What the staff still owe the owner for the day on screen (806): the one thing
+ * What the staff still owe the owner for the day on screen (806, 807): the one thing
  * Al Hakeem said the Dashboard must show.
  *
- *   total sales (fuel + oil) - credit - the day's expenses  =  TO COLLECT
+ *   total sales (fuel + oil) + received from customers - credit - the day's
+ *   expenses  =  TO COLLECT (a credit customer's payment is cash the staff hold, 808)
  *   TO COLLECT  -  handed in to the safe          =  STILL TO COLLECT
  *
  * Every figure arrives from Postgres (`get_day_collection`); this page adds
@@ -62,12 +63,13 @@ export default function CollectionPanel({ collection, date }) {
           readings first.
         </p>
       ) : (
-        <div className="grid gap-px bg-ink-200 @[44rem]:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.3fr)]">
+        <div className="grid gap-px bg-ink-200 @[36rem]:grid-cols-3 @[72rem]:grid-cols-[repeat(5,minmax(0,1fr))_minmax(0,1.3fr)]">
           <Step label="Total sales" value={formatPKR(collection.total_sales)} sub={
             n(collection.oil_sales) > 0
               ? `${formatPKR(collection.fuel_sales)} fuel, ${formatPKR(collection.oil_sales)} oil`
               : 'Fuel at the nozzles'
           } />
+          <Step label="Received" value={formatPKR(collection.received)} sub="Paid in by customers" />
           <Step label="Credit" value={formatPKR(collection.total_credit)} sub="Not cash, on customers' accounts" />
           <Step label="Expenses" value={formatPKR(collection.expenses)} sub="Paid out today" />
           <Step label="Handed in" value={formatPKR(collection.handed_in)} sub="Into the safe today" />
