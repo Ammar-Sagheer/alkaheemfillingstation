@@ -974,6 +974,7 @@ Applied in order:
 | `806_what_is_still_to_collect_from_the_staff.sql` | **Al Hakeem only.** `get_day_collection(date)`, read-only, owner-only: fuel cash (sold less credit) less the day's expenses = to collect; less Treasury cash-in of the day (shift closing, entry) = still to collect. Shown on the Dashboard. Oil cash and direct bank deposits are not in it yet |
 | `807_collection_counts_oil_and_shows_credit.sql` | **Al Hakeem only.** Replaces `get_day_collection` (same signature): total sales now include oil, credit (fuel and oil) is its own figure, `to_collect` and `still_to_collect` include oil. Adds `total_sales`, `total_credit`, `oil_sales`, `oil_credit`. Read-only |
 | `808_customer_payments_in_the_days_collection.sql` | Nullable `ledger_entries.is_payment`, set by Record a payment; `get_day_collection` adds `received` (payments dated the day) into the day's cash to collect, as a credit customer's payment is cash the staff hold. Al Tufail's own 900 is the same. No row changed |
+| `809_hand_entered_customer_debits_count_as_credit.sql` | **Al Hakeem only for now.** `get_day_collection` counts customer debits entered by hand (not posted by a credit slip or an oil sale, not a reversal) and dated the day as credit, returned as `entered_credit` and included in `total_credit`. Read-only. An old-register opening balance entered the same way would count on its date |
 
 All reporting is done as Postgres aggregate RPCs rather than in the browser, so
 the numbers are fast and cannot be altered client-side.

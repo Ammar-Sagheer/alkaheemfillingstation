@@ -70,7 +70,11 @@ export default function CollectionPanel({ collection, date }) {
               : 'Fuel at the nozzles'
           } />
           <Step label="Received" value={formatPKR(collection.received)} sub="Paid in by customers" />
-          <Step label="Credit" value={formatPKR(collection.total_credit)} sub="Not cash, on customers' accounts" />
+          <Step label="Credit" value={formatPKR(collection.total_credit)} sub={
+            n(collection.entered_credit) > 0
+              ? `Not cash. Includes ${formatPKR(collection.entered_credit)} entered on customer accounts`
+              : "Not cash, on customers' accounts"
+          } />
           <Step label="Expenses" value={formatPKR(collection.expenses)} sub="Paid out today" />
           <Step label="Handed in" value={formatPKR(collection.handed_in)} sub="Into the safe today" />
           <div className="bg-white px-5 py-4">

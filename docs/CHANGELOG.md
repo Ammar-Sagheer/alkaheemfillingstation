@@ -142,6 +142,18 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## Customer credit written on the customer's page now reaches the Dashboard (11 Oct 2026)
+
+Al Hakeem gives fuel on credit and often writes it on the customer's own page
+(a hand-entered debit, note "."), not as a slip on the nozzle's reading: Shah Ali
+pur Rs 14,320 and PM Relief Rs 138,500 on 10 Oct. The Dashboard's "To collect from
+the staff" counted only slips and oil credit, so those never showed and cash to
+collect read too high. Migration 809 counts such a debit, dated the day, as credit
+(`entered_credit`), and the panel's Credit says how much of it was entered that
+way. The owner chose this over asking staff to use slips. Caveat: an opening
+balance entered the same way counts on its date. **Run 809**; the panel works
+without it, it just does not include the entries. This copy only for now.
+
 ## Oil sale and the day's dip, from the Readings page (11 Oct 2026)
 
 Asked for by Al Tufail, built here for Al Hakeem at the owner's request. The two
