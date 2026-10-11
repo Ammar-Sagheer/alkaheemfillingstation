@@ -154,6 +154,13 @@ way. The owner chose this over asking staff to use slips. Caveat: an opening
 balance entered the same way counts on its date. **Run 809**; the panel works
 without it, it just does not include the entries. This copy only for now.
 
+**The Dashboard went stale after some entries.** `createExpense`,
+`recordLedgerAdjustment` and `createTreasuryEntry` did not revalidate `/admin`, so
+an expense added on the Expenses page, a hand-entered customer debit, or cash
+handed in on Treasury did not show on the Dashboard's cash to collect until the
+page cache expired. They now revalidate `/admin` and `/admin/readings`. (Salary
+payments, deletions, bank and deposit entries already did.)
+
 ## Oil sale and the day's dip, from the Readings page (11 Oct 2026)
 
 Asked for by Al Tufail, built here for Al Hakeem at the owner's request. The two
