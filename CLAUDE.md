@@ -37,6 +37,7 @@
 > - **Oil sale buttons and Record the dip on the Readings page**: the Lubricants and Stock dialogs (`LubricantSaleForm`, `LooseOilSaleForm`, `DailyDipButton.js`) for the day on screen. Asked for by Al Tufail first.
 > - **Hand-entered customer debits count as credit** in the Dashboard's cash to collect (809, this copy only for now): fuel given on credit and written on the customer's page instead of as a slip on the reading.
 > - The backup panel shows only when the Vercel env var `SHOW_BACKUP=true`.
+> - `supabase/setup/new-database/`: this repo's migrations (001 to 072, 800 to 812) plus `start-empty.sql`, joined and cut into four files, run in order on a brand-new Supabase project (used to move the pump to its own project, 12 Oct 2026). Rebuild it from the migrations when a new one is added; it stops at 812.
 >
 > **This client's suggestions go to the other pumps too.** The owner of this
 > repo has said so: what Al Hakeem asks for is built here first and then copied
