@@ -30,7 +30,9 @@ export default function FullResetPanel() {
           <h3 className="text-lg font-semibold text-red-800">Empty everything</h3>
           <p className="mt-1 max-w-[65ch] text-base text-ink-700">
             Removes every reading, credit slip, ledger entry, customer, delivery, stock check,
-            expense and fuel rate. Logins, tanks and nozzle starting readings are kept.
+            expense, fuel rate, salary payment, attendance mark, safe entry and bank transaction.
+            Bank accounts start again at nothing. Logins, staff, tanks, nozzles, suppliers and
+            lubricants are kept.
           </p>
         </div>
         <Button variant="danger" type="button" onClick={() => setIsOpen(true)} className="shrink-0">

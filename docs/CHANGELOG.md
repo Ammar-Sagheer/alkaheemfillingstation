@@ -142,6 +142,20 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## Empty everything also empties the safe and the bank (811, 12 Oct 2026)
+
+Al Hakeem's owner wanted to start again. `reset_all_data()` already cleared the register, ledgers,
+deliveries, pay (802: salary payments, advances and attendance) and expenses, but left the safe
+(`treasury_entries`) and the bank (`bank_transactions`) standing. 811 adds both: bank transactions go
+first (a deposit made from the safe takes its safe half with it, 805), then every safe entry, and each
+bank account is kept by name but restarts at nothing (`opening_balance` and the `pruned_*` totals to
+zero), so the real balance is entered again as its first deposit. Logins, staff, tanks, nozzles,
+suppliers, lubricants and assets are kept; customer vehicles go with their customers. The panel's
+sentence in Settings says the same. Edits the installed function, as 802 did; refuses a second run.
+Tried on a scratch database with a linked deposit, a safe opening entry, a vehicle and an expense: all
+gone, tanks and nozzles kept. The button itself only exists where `ALLOW_FULL_RESET=true`, and needs
+the owner's password and the word RESET. Al Hakeem's own for now.
+
 ## The Guide's setup steps start a pump on the 1st (12 Oct 2026)
 
 Carried from the master. The one-time setup in the in-app Guide now also covers the tank's "As of" date,
