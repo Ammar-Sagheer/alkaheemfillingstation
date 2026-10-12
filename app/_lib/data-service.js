@@ -286,6 +286,23 @@ export async function getReadingSheet(date) {
 }
 
 /**
+ * The latest day with any nozzle reading saved, or null when there is none.
+ * The Readings page opens on the day after it (see readings/page.js).
+ */
+export async function getLatestReadingDate() {
+  const supabase = await createClient();
+  const rows = unwrap(
+    await supabase
+      .from('nozzle_readings')
+      .select('reading_date')
+      .order('reading_date', { ascending: false })
+      .limit(1),
+    'the latest reading day',
+  );
+  return rows[0]?.reading_date ?? null;
+}
+
+/**
  * Credit slips for a set of readings, keyed by reading id.
  *
  * Takes ids rather than filtering through the parent table, because filtering

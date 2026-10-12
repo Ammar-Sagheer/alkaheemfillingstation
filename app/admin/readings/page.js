@@ -1,6 +1,7 @@
 import { requirePageRole, ROLES, todayISO, entryDayISO } from '@/app/_lib/helpers';
 import {
   getReadingSheet,
+  getLatestReadingDate,
   getCustomers,
   getCustomerBalances,
   getCreditSalesForReadings,
@@ -11,6 +12,7 @@ import {
   getExpectedStockForAllTanks,
   getStockChecks,
 } from '@/app/_lib/data-service';
+import { shiftISODate } from '@/app/_lib/date-helpers';
 import ReadingsView from '@/app/_components/admin/readings/ReadingsView';
 
 export const metadata = { title: 'Daily readings' };
@@ -34,9 +36,26 @@ export default async function ReadingsPage({ searchParams }) {
     typeof params?.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.date)
       ? params.date
       : null;
-  // After midnight the page opens on the day just traded (entryDayISO).
-  const date = askedFor ?? entryDayISO();
-  const afterMidnight = !askedFor && date !== todayISO();
+  // With no date asked for, the page opens on the first day still to enter: the
+  // day after the last day with readings, but never past the day just traded
+  // (after midnight that is yesterday, entryDayISO). So a month typed in again
+  // after a reset, or a few forgotten days, opens on the next gap instead of on
+  // today. A last day with a nozzle still missing opens on that day itself.
+  const tradedDay = entryDayISO();
+  let date = askedFor ?? tradedDay;
+  if (!askedFor) {
+    try {
+      const latest = await getLatestReadingDate();
+      if (latest && latest < tradedDay) {
+        const latestSheet = await getReadingSheet(latest);
+        const unfinished = latestSheet.some((row) => !row.reading_id);
+        date = unfinished ? latest : shiftISODate(latest, 1);
+      }
+    } catch {
+      // A failure here only means the page opens on the usual day.
+    }
+  }
+  const afterMidnight = !askedFor && date === tradedDay && date !== todayISO();
 
   const isOwner = profile.role === ROLES.SUPER_ADMIN;
 

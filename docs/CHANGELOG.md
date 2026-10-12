@@ -142,6 +142,15 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## Readings opens on the first day still to enter (12 Oct 2026)
+
+Al Hakeem is typing October in again after a reset, a day at a time. The Readings page opened on
+today (or yesterday after midnight), so each visit meant jumping back to the next gap. With no date
+in the address it now opens on the day after the last day that has readings, never past the day just
+traded; if that last day still has a nozzle without a reading, it opens on that day instead. A date
+asked for (arrows, date box, a link) is used as given. Normal daily use is unchanged: the last day
+is yesterday, so it opens on today as before. One extra read (`getLatestReadingDate`), no migration.
+
 ## Empty everything also empties the safe and the bank (811, 12 Oct 2026)
 
 Al Hakeem's owner wanted to start again. `reset_all_data()` already cleared the register, ledgers,
