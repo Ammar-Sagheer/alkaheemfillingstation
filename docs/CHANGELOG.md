@@ -142,6 +142,16 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## A new customer's opening balance can be dated (812, 12 Oct 2026)
+
+The master's 086. Found setting this pump up to start on 1 October and type the month in after the
+fact: the new-customer form's opening balance was dated the day it was typed, so on the statement it
+sat below the October slips. The form now has an **As of** box (default today, never in the future)
+and `create_customer_with_opening()` takes `p_opening_date` (null means today). 812 drops the
+six-argument function and creates the seven-argument one. The form sends the new argument only when
+the date is not today, so ordinary new customers work before 812 is run; a dated balance needs 812.
+The Guide's credit-customer step says to use the close of the day before the start. No row is touched.
+
 ## Readings opens on the first day still to enter (12 Oct 2026)
 
 Al Hakeem is typing October in again after a reset, a day at a time. The Readings page opened on

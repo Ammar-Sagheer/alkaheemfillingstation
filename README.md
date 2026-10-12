@@ -977,6 +977,7 @@ Applied in order:
 | `809_hand_entered_customer_debits_count_as_credit.sql` | **Al Hakeem only for now.** `get_day_collection` counts customer debits entered by hand (not posted by a credit slip or an oil sale, not a reversal) and dated the day as credit, returned as `entered_credit` and included in `total_credit`. Read-only. An old-register opening balance entered the same way would count on its date |
 | `810_collection_ignores_cancelled_entries.sql` | **Al Hakeem only for now.** Fixes 808 and 809 in `get_day_collection`: a hand-entered debit counts only if it still stands (not the orphan of a slip whose day was cleared, not cancelled by a correction), and a payment only if it was not cancelled. Read-only |
 | `811_reset_clears_the_safe_and_the_bank.sql` | **Al Hakeem only.** `reset_all_data()` (Empty everything) also deletes every bank transaction and safe entry, and sets each bank account back to nothing (kept by name). Edits the installed function; refuses a second run |
+| `812_opening_balance_can_be_dated.sql` | The master's 086. `create_customer_with_opening()` takes an optional `p_opening_date` (null = today, never in the future); the six-argument function is dropped. The new-customer form has an As of box |
 
 All reporting is done as Postgres aggregate RPCs rather than in the browser, so
 the numbers are fast and cannot be altered client-side.

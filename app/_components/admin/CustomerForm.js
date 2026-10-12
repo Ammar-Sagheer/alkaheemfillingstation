@@ -10,6 +10,7 @@ import Dialog from '@/app/_components/ui/Dialog';
 import NumberInput from '@/app/_components/ui/NumberInput';
 import BalanceDirection from '@/app/_components/admin/BalanceDirection';
 import Button from '@/app/_components/ui/Button';
+import { todayISO } from '@/app/_lib/date-helpers';
 
 const moneyFormat = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
@@ -227,6 +228,25 @@ export default function CustomerForm() {
                     className="input-number"
                     placeholder="0"
                   />
+                  <div className="mt-3">
+                    <label className="label" htmlFor="opening_date">
+                      As of
+                    </label>
+                    <input
+                      id="opening_date"
+                      name="opening_date"
+                      type="date"
+                      required
+                      max={todayISO()}
+                      defaultValue={todayISO()}
+                      className="input"
+                    />
+                    <p className="mt-1 text-sm text-ink-600">
+                      The day this balance stood. Setting the app up on the 1st with days still to
+                      type in? Use the close of the day before (30 September for a 1 October
+                      start), so the balance sits above those days on the statement.
+                    </p>
+                  </div>
                   {/* The same check the manual adjustment makes: state the
                     result, so a misread label is caught by the figure. */}
                   {hasAmount ? (
