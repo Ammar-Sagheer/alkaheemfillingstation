@@ -37,7 +37,7 @@ export const GUIDE = {
       {
         when: 'Once, at the start',
         title: 'Set the pump up',
-        body: 'Tanks, nozzles, prices, staff, customers. The owner does this, and only once.',
+        body: 'Tanks, nozzles, prices, opening cash, staff, customers. The owner does this, and only once, from the figures of the last night.',
       },
       {
         when: 'Every evening',
@@ -53,7 +53,7 @@ export const GUIDE = {
 
     startHere: {
       heading: 'Where to begin',
-      body: 'If the pump has already been set up, skip to “Every evening” below. That is the part done daily. The steps here are done once, by the owner, before anyone enters a first reading.',
+      body: 'If the pump has already been set up, skip to “Every evening” below. That is the part done daily. If the pump is new, press “Show the steps” under “One-time setup” and follow them in order: they are done once, by the owner, before anyone enters a first reading.',
     },
 
     setup: {
@@ -63,17 +63,32 @@ export const GUIDE = {
         {
           title: 'Tanks',
           where: { icon: 'settings', path: 'Settings → Tanks' },
-          body: 'Add each tank, its fuel, how many litres it holds, and how much is in it today. That figure is the starting point every stock calculation counts from.',
+          body: 'Add each tank, its fuel, how many litres it holds, and how much is in it now. Beside it, under “As of”, put the first day you will use the app. The litres are the dip you took on the last night before that day, after the last sale. That figure is the starting point every stock calculation counts from, and the month’s profit counts it too, so never leave it at 0 to fix later.',
         },
         {
           title: 'Nozzles',
           where: { icon: 'settings', path: 'Settings → Nozzle settings' },
-          body: 'Add every nozzle and say which tank it draws from. Get this right: a nozzle wired to the wrong tank takes fuel out of the wrong stock.',
+          body: 'Add every nozzle and say which tank it draws from. Get this right: a nozzle wired to the wrong tank takes fuel out of the wrong stock. “Meter reading now” is the number on the machine itself, read on the same last night. Never copy it from the register and never work it out: a meter counts turns, not litres. “First day in use” is the day you start.',
         },
         {
           title: "Today's prices",
           where: { icon: 'settings', path: 'Settings → Fuel prices' },
-          body: 'Set a rate for petrol and for diesel. Readings cannot be entered for a day that has no price, so this comes before anything else is typed.',
+          body: 'Set a rate for petrol and for diesel, each “Effective from” the first day you start. Readings cannot be entered for a day that has no price, so this comes before anything else is typed. When a price changes later, add a new price with its new date; never change the old one.',
+        },
+        {
+          title: 'Cash in the safe',
+          where: { icon: 'treasury', path: 'Treasury → Record cash' },
+          body: 'Count the safe on the last night and record it once: direction In, reason “Already in the safe”, the amount, and that night’s date. Skip this if the pump keeps no safe.',
+        },
+        {
+          title: 'Bank accounts, if you have any',
+          where: { icon: 'banking', path: 'Banking → Add a bank account' },
+          body: 'Add each account with its opening balance from the latest statement. Skip this if the business has no bank account.',
+        },
+        {
+          title: 'Suppliers',
+          where: { icon: 'suppliers', path: 'Suppliers → Add a supplier' },
+          body: 'Add the company or dealer you buy fuel from. If you owe them money from before the first day, open the supplier and add that as an opening balance. Deliveries work without a supplier, but then the app cannot show what you owe.',
         },
         {
           title: 'Staff logins',
@@ -94,6 +109,13 @@ export const GUIDE = {
           title: 'Loose oil, if a drum is kept',
           where: { icon: 'lubricants', path: 'Lubricants → Manage lubricants' },
           body: 'Choose “Loose oil” as the kind instead of “Sealed packs”. Give it a name and the rate you sell it at per litre, which is required. That rate is what turns “Rs 20 of oil” into litres off the drum, so keep it up to date whenever the price changes.',
+        },
+        {
+          title: 'Check before the first day',
+          where: { icon: 'dashboard', path: 'Dashboard' },
+          body: 'Both tanks should show the litres you typed, with no negative figure. Then open Readings for the first day: every nozzle’s opening figure must be exactly the meter reading you typed. If one is different, fix that nozzle before entering anything. After the first evening, compare the day’s sales and cash with the paper register to the paisa.',
+          tip: 'The first month’s profit is close, not exact. The fuel already in the tanks on the first day has no delivery behind it in the app, so its cost is estimated from the deliveries you record. From the second month on, the opening stock is stock the app watched arrive, and the profit is exact. Every bill must be entered under Expenses, or the profit looks too high.',
+          warn: true,
         },
       ],
     },
@@ -273,7 +295,7 @@ export const GUIDE = {
       {
         when: 'ایک بار، شروع میں',
         title: 'پمپ سیٹ کریں',
-        body: 'ٹینک، نوزل، ریٹ، ملازمین، گاہک۔ یہ مالک کرتا ہے، اور صرف ایک بار۔',
+        body: 'ٹینک، نوزل، ریٹ، تجوری کی رقم، ملازمین، گاہک۔ یہ مالک کرتا ہے، اور صرف ایک بار، آخری رات کے اعداد و شمار سے۔',
       },
       {
         when: 'ہر شام',
@@ -289,7 +311,7 @@ export const GUIDE = {
 
     startHere: {
       heading: 'شروعات کہاں سے کریں',
-      body: 'اگر پمپ پہلے سے سیٹ ہو چکا ہے تو نیچے «ہر شام» والے حصے پر چلے جائیں، روزانہ کا کام وہی ہے۔ یہاں دیے گئے مرحلے صرف ایک بار، مالک کی طرف سے، پہلی ریڈنگ درج ہونے سے پہلے کیے جاتے ہیں۔',
+      body: 'اگر پمپ پہلے سے سیٹ ہو چکا ہے تو نیچے «ہر شام» والے حصے پر چلے جائیں، روزانہ کا کام وہی ہے۔ اگر پمپ نیا ہے تو «ایک بار کی سیٹنگ» کے نیچے «مراحل دیکھیں» دبائیں اور اِسی ترتیب سے چلیں: یہ صرف ایک بار، مالک کی طرف سے، پہلی ریڈنگ درج ہونے سے پہلے کیے جاتے ہیں۔',
     },
 
     setup: {
@@ -299,17 +321,32 @@ export const GUIDE = {
         {
           title: 'ٹینک',
           where: { icon: 'settings', path: 'سیٹنگز ← ٹینک' },
-          body: 'ہر ٹینک درج کریں: کون سا تیل، کتنے لٹر کی گنجائش، اور آج اُس میں کتنا موجود ہے۔ یہی مقدار وہ نقطۂ آغاز ہے جس سے اسٹاک کا سارا حساب چلتا ہے۔',
+          body: 'ہر ٹینک درج کریں: کون سا تیل، کتنے لٹر کی گنجائش، اور اِس وقت اُس میں کتنا موجود ہے۔ اُس کے ساتھ «As of» میں وہ پہلا دن لکھیں جس سے آپ ایپ استعمال کریں گے۔ لٹر وہ ڈپ ہے جو آپ نے اُس سے پہلی رات، آخری فروخت کے بعد، لیا۔ یہی مقدار وہ نقطۂ آغاز ہے جس سے اسٹاک کا سارا حساب چلتا ہے، اور مہینے کا منافع بھی اِسی کو گنتا ہے، اِس لیے اِسے بعد میں ٹھیک کرنے کے لیے صفر نہ چھوڑیں۔',
         },
         {
           title: 'نوزل',
           where: { icon: 'settings', path: 'سیٹنگز ← نوزل سیٹنگز' },
-          body: 'ہر نوزل درج کریں اور بتائیں کہ وہ کس ٹینک سے تیل لیتی ہے۔ یہ درست ہونا ضروری ہے، غلط ٹینک سے جڑی نوزل غلط اسٹاک میں سے تیل کم کرتی رہے گی۔',
+          body: 'ہر نوزل درج کریں اور بتائیں کہ وہ کس ٹینک سے تیل لیتی ہے۔ یہ درست ہونا ضروری ہے، غلط ٹینک سے جڑی نوزل غلط اسٹاک میں سے تیل کم کرتی رہے گی۔ «Meter reading now» مشین پر لکھا ہوا اپنا نمبر ہے، اُسی آخری رات پڑھا ہوا۔ اِسے رجسٹر سے نقل نہ کریں اور نہ حساب لگا کر نکالیں: میٹر چکر گنتا ہے، لٹر نہیں۔ «First day in use» وہ دن ہے جس سے آپ شروع کر رہے ہیں۔',
         },
         {
           title: 'آج کے ریٹ',
           where: { icon: 'settings', path: 'سیٹنگز ← فیول کی قیمتیں' },
-          body: 'پیٹرول اور ڈیزل، دونوں کا ریٹ درج کریں۔ جس دن کا ریٹ موجود نہ ہو اُس دن کی ریڈنگ درج نہیں ہو سکتی، اِس لیے یہ سب سے پہلے کریں۔',
+          body: 'پیٹرول اور ڈیزل، دونوں کا ریٹ درج کریں، ہر ایک کا «Effective from» وہی پہلا دن ہو جس سے آپ شروع کر رہے ہیں۔ جس دن کا ریٹ موجود نہ ہو اُس دن کی ریڈنگ درج نہیں ہو سکتی، اِس لیے یہ سب سے پہلے کریں۔ بعد میں ریٹ بدلے تو نئی تاریخ کے ساتھ نیا ریٹ شامل کریں، پرانے کو کبھی نہ بدلیں۔',
+        },
+        {
+          title: 'تجوری میں نقد',
+          where: { icon: 'treasury', path: 'تجوری ← Record cash' },
+          body: 'آخری رات تجوری کی رقم گنیں اور ایک ہی بار درج کریں: سمت In، وجہ «Already in the safe»، رقم، اور اُس رات کی تاریخ۔ اگر پمپ پر تجوری نہیں رکھی جاتی تو یہ مرحلہ چھوڑ دیں۔',
+        },
+        {
+          title: 'بینک اکاؤنٹ، اگر ہوں',
+          where: { icon: 'banking', path: 'بینک ← بینک اکاؤنٹ شامل کریں' },
+          body: 'ہر اکاؤنٹ اُس کے تازہ ترین اسٹیٹمنٹ کے مطابق ابتدائی بیلنس کے ساتھ شامل کریں۔ اگر کاروبار کا بینک اکاؤنٹ نہیں ہے تو یہ مرحلہ چھوڑ دیں۔',
+        },
+        {
+          title: 'سپلائر',
+          where: { icon: 'suppliers', path: 'سپلائر ← سپلائر شامل کریں' },
+          body: 'وہ کمپنی یا ڈیلر شامل کریں جس سے آپ تیل خریدتے ہیں۔ اگر پہلے دن سے پہلے کی کوئی رقم آپ کے ذمے ہے تو سپلائر کھول کر وہ ابتدائی بیلنس کے طور پر لکھ دیں۔ سپلائر کے بغیر بھی ڈلیوری درج ہو جاتی ہے، مگر پھر ایپ یہ نہیں بتا سکتی کہ آپ کے ذمے کتنا ہے۔',
         },
         {
           title: 'ملازمین کے لاگ اِن',
@@ -330,6 +367,13 @@ export const GUIDE = {
           title: 'کھلا آئل، اگر ڈرم رکھا جاتا ہو',
           where: { icon: 'lubricants', path: 'لبریکنٹ ← لبریکنٹ سنبھالیں' },
           body: '«بند ڈبے» کے بجائے قسم میں «کھلا آئل» منتخب کریں۔ نام لکھیں اور (یہ لازمی ہے) فی لٹر فروخت کا ریٹ بھی درج کریں۔ یہی ریٹ «بیس روپے کا آئل» کو ڈرم میں سے نکلنے والے لٹروں میں بدلتا ہے، اِس لیے قیمت بدلے تو ریٹ بھی بدل دیں۔',
+        },
+        {
+          title: 'پہلے دن سے پہلے جانچ',
+          where: { icon: 'dashboard', path: 'ڈیش بورڈ' },
+          body: 'دونوں ٹینک وہی لٹر دکھائیں جو آپ نے لکھے تھے، اور کہیں منفی رقم نہ ہو۔ پھر پہلے دن کی ریڈنگ کھولیں: ہر نوزل کی ابتدائی ریڈنگ بالکل وہی ہو جو آپ نے میٹر کی لکھی تھی۔ اگر کوئی مختلف ہو تو کچھ بھی درج کرنے سے پہلے اُس نوزل کو ٹھیک کریں۔ پہلی شام کے بعد دن کی فروخت اور نقد کاغذی رجسٹر سے پائی پائی ملائیں۔',
+          tip: 'پہلے مہینے کا منافع قریب قریب ہوتا ہے، بالکل درست نہیں۔ پہلے دن ٹینکوں میں جو تیل پہلے سے موجود تھا اُس کی ایپ میں کوئی ڈلیوری درج نہیں، اِس لیے اُس کی لاگت آپ کی درج کی ہوئی ڈلیوریوں سے اندازاً نکالی جاتی ہے۔ دوسرے مہینے سے ابتدائی اسٹاک وہ ہوتا ہے جسے ایپ نے آتے دیکھا، اور منافع بالکل درست ہوتا ہے۔ ہر بل «اخراجات» میں درج ہونا ضروری ہے، ورنہ منافع ضرورت سے زیادہ نظر آئے گا۔',
+          warn: true,
         },
       ],
     },

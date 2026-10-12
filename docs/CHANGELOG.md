@@ -142,6 +142,13 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## The Guide's setup steps start a pump on the 1st (12 Oct 2026)
+
+Carried from the master. The one-time setup in the in-app Guide now also covers the tank's "As of" date,
+reading the meter off the machine, prices effective from the first day, opening cash, bank balances,
+suppliers and a check before the first day, with a note that the first month's profit is an estimate.
+English and Urdu together in `app/_lib/guide-content.js`. Content only, no migration. This copy has no dip charts, so the dip-chart step and tip are left out.
+
 ## A warning when a payment is more than the customer owes (11 Oct 2026)
 
 Found while tracing a failed "Money received": the database accepts a payment larger than the
