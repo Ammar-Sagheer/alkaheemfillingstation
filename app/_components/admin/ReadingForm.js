@@ -21,7 +21,7 @@ import Dialog from '@/app/_components/ui/Dialog';
 import Icon from '@/app/_components/ui/Icon';
 import { fuelColor } from '@/app/_lib/fuel-colors';
 import Button from '@/app/_components/ui/Button';
-import ReceivedFromCustomerButton from '@/app/_components/admin/ReceivedFromCustomerButton';
+import CashInOutButton from '@/app/_components/admin/CashInOutButton';
 
 /*
  * Formatting is done inline here rather than imported from helpers.js: that
@@ -449,9 +449,9 @@ function SavedReading({ row, date, customers, creditSales, canDelete }) {
         </div>
       ) : null}
 
-      {/* Money a customer paid at the pump, beside the slips above. */}
+      {/* Cash that went across the counter with a customer, beside the slips above. */}
       <div>
-        <ReceivedFromCustomerButton customers={customers} date={date} />
+        <CashInOutButton customers={customers} date={date} />
       </div>
 
       <FormMessage state={state} />
@@ -753,7 +753,7 @@ function EntryForm({ row, date, customers }) {
 
         {/* Beside the slips: a customer paying money in, at the pump. */}
         <div className="flex justify-end">
-          <ReceivedFromCustomerButton customers={customers} date={date} />
+          <CashInOutButton customers={customers} date={date} />
         </div>
 
         {lines.length === 0 ? (

@@ -33,7 +33,7 @@
 >   pay, summed in Postgres, recorded as one "Salaries" expense per person in
 >   the month worked. A paid month's attendance is closed.
 > - **Staff advances and part payments** (804), **Deposit to bank** from the safe (805) and the Dashboard's **To collect from the staff** panel (806), plus the Salaries page renamed Staff. See the changelog entry of 10 Oct 2026.
-> - **Money received from a customer** beside the credit slips in each nozzle's form (`ReceivedFromCustomerButton.js`), the same entry as Record a payment, counted in the Dashboard's cash to collect (808). Asked for by Al Tufail first.
+> - **Money in / out beside the credit slips in each nozzle's form** (`CashInOutButton.js`, `recordCashGiven`; it replaced his "Money received" button, `ReceivedFromCustomerButton.js`, 14 Oct 2026): Money received (a customer paid, the same entry as Record a payment, counted in the Dashboard's cash to collect, 808) and Money taken (cash a customer or the family took, no fuel: a "Cash given" debit, counted by 809). No migration. Built for Raees Gullan from Al Tufail's button; the master has it as 089.
 > - **Oil sale buttons and Record the dip on the Readings page**: the Lubricants and Stock dialogs (`LubricantSaleForm`, `LooseOilSaleForm`, `DailyDipButton.js`) for the day on screen. Asked for by Al Tufail first.
 > - **Hand-entered customer debits count as credit** in the Dashboard's cash to collect (809, this copy only for now): fuel given on credit and written on the customer's page instead of as a slip on the reading.
 > - The backup panel shows only when the Vercel env var `SHOW_BACKUP=true`.

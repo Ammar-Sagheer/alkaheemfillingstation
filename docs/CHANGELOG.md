@@ -142,6 +142,15 @@ single read.
    and nothing fails until the day an old backup is needed.
 
 
+## Money in / out replaces Money received in the nozzle's form (14 Oct 2026)
+
+Carried from the master (built for Raees Gullan from Al Tufail's button). His "Money received" button is now
+**Money in / out** (`CashInOutButton.js`): the same Money received (`recordPayment`, 808) plus **Money taken**
+(`recordCashGiven`, a debit noted "Cash given" for cash a customer or the family took out of the takings, no fuel).
+His 809 and 810 already count a hand-entered debit as credit in the Dashboard's cash to collect, so **no migration
+is needed**: the Dashboard follows at once. The dialog still renders into `document.body`. Not in the dictionaries
+(this copy has none).
+
 ## A new customer's opening balance can be dated (812, 12 Oct 2026)
 
 The master's 086. Found setting this pump up to start on 1 October and type the month in after the

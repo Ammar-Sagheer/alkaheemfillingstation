@@ -1506,6 +1506,55 @@ export async function recordPayment(_prevState, formData) {
 }
 
 /**
+ * Cash a customer (or the owner's family) took out of the pump's takings, and no
+ * fuel: from the nozzle's "Money in / out" form (Raees Gullan, October 2026).
+ *
+ * A debit on their account, dated the day. Not a credit slip, so it has no
+ * reading and no litres; the Dashboard counts a hand-entered debit as credit
+ * (migration 088). The note always starts "Cash given", so it is never mistaken
+ * for an opening balance or a slip posted by the system.
+ */
+export async function recordCashGiven(_prevState, formData) {
+  let profile;
+  try {
+    profile = await requireRole(ROLES.SUPER_ADMIN, ROLES.DATA_ENTRY);
+  } catch (error) {
+    return fail(error.message);
+  }
+
+  const customerId = text(formData, 'customer_id');
+  const amount = number(formData, 'amount');
+  const entryDate = text(formData, 'entry_date');
+  const note = text(formData, 'note');
+
+  if (!customerId) return fail('Choose the customer.');
+  if (amount === null || amount <= 0) return fail('Enter how much was taken.');
+  if (!entryDate) return fail('Enter the date.');
+
+  // Whole rupees, like every other ledger write.
+  const taken = roundRupees(amount);
+  if (taken <= 0) return fail('The amount has to be at least one rupee.');
+
+  const supabase = await createClient();
+  const { error } = await supabase.from('ledger_entries').insert({
+    customer_id: customerId,
+    entry_type: 'debit',
+    amount: taken,
+    entry_date: entryDate,
+    note: note ? `Cash given: ${note}` : 'Cash given',
+    created_by: profile.id,
+  });
+
+  if (error) return fail(describe(error, 'Could not record the cash.'));
+
+  revalidatePath(`/admin/customers/${customerId}`);
+  revalidatePath('/admin/customers');
+  revalidatePath('/admin/readings');
+  revalidatePath('/admin');
+  return ok('Cash taken recorded.');
+}
+
+/**
  * A manual correction to the ledger - an opening balance carried over from the
  * old register, or an entry that cancels out an earlier mistake.
  *
